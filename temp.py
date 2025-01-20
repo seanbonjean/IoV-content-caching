@@ -1,6 +1,7 @@
 import utils
 import data_read as data
 import json
+import matplotlib.pyplot as plt
 
 CENTER_LOCATION = (116.36032115, 39.911045075)
 
@@ -39,34 +40,23 @@ CENTER_LOCATION = (116.36032115, 39.911045075)
 # yx = utils.GPStoXY(point_C[0], point_C[1], CENTER_LOCATION[0], CENTER_LOCATION[1])
 # gps = utils.XYtoGPS(yx[1], yx[0], CENTER_LOCATION[0], CENTER_LOCATION[1])
 
-users = data.read_json("data/user/filtered_users.json")
-omega_steps = data.read_json("data/user/user_omega_step.json")
 
-print()
+# f = open("data/user/all_filtered_users.json", 'r')
+# users = json.load(f)
+# f.close()
+#
+# f = open("data/user/all_user_omega_step.json", 'r')
+# omega_steps = json.load(f)
+# f.close()
 
-for user in users:
-    for i, point in enumerate(user['real_traj']):
-        y, x = point[0], point[1]
-        user['real_traj'][i] = (x, y)
-    for slice in user['pred_traj']:
-        for i, point in enumerate(slice['seqs']):
-            y, x = point[0], point[1]
-            slice['seqs'][i] = (x, y)
+# for user in users:
+#     print(user['user_id'])
+# print("666")
+# for user in omega_steps:
+#     print(user['user_id'])
 
-for user in omega_steps:
-    for timestamp in user['trajs']:
-        point = timestamp['real']
-        y, x = point[0], point[1]
-        timestamp['real'] = (x, y)
-        for i, point in enumerate(timestamp['omega_step']):
-            y, x = point[0], point[1]
-            timestamp['omega_step'][i] = (x, y)
+point1 = utils.GPStoXY(116.353649, 39.91671, CENTER_LOCATION[0], CENTER_LOCATION[1])
+point2 = utils.GPStoXY(116.353872, 39.91747, CENTER_LOCATION[0], CENTER_LOCATION[1])
 
-print()
-
-f = open("data/user/filtered_users_revised.json", 'w')
-json.dump(users, f)
-f.close()
-f = open("data/user/user_omega_step_revised.json", 'w')
-json.dump(omega_steps, f)
-f.close()
+print(point1[0] - point2[0])
+print(point1[1] - point2[1])

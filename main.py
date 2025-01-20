@@ -5,13 +5,23 @@ import json
 MBS_RADIUS = 600  # meters
 RSU_RADIUS = 100  # meters
 
-users = data.read_json("data/user/filtered_users_revised.json")
-omega_steps = data.read_json("data/user/user_omega_step_revised.json")
+CENTER_LOCATION = (116.36032115, 39.911045075)
+
+TRAJ_LEN = 7  # 拥有完整omega step的轨迹长度
+
+# users = data.read_json("data/user/discarded_users.json")
+# omega_steps = data.read_json("data/user/discarded_omega_steps.json")
+users = data.read_json("data/user/all_filtered_users.json")
+omega_steps = data.read_json("data/user/all_user_omega_step.json")
 mbs_pos = data.read_mbs_rsu("data/mbs_rsu/mbs_xy.txt")
-rsu_pos = data.read_mbs_rsu("data/mbs_rsu/rsu_xy.txt") + data.read_mbs_rsu("data/mbs_rsu/rsu_added_xy.txt")
+# rsu_pos = data.read_mbs_rsu("data/mbs_rsu/rsu_xy.txt") + data.read_mbs_rsu("data/mbs_rsu/rsu_added_xy_v8.txt")
+rsu_pos = data.read_mbs_rsu("data/mbs_rsu/rsu_added_xy_v9.txt")
 
 print()
 
+# omega_steps = omega_steps[:18]
+
+# 寻找每个点属于哪个RSU和MBS
 for user in omega_steps:
     for point in user['trajs']:
         # 真实点
@@ -19,7 +29,9 @@ for user in omega_steps:
         MBS_distances = [utils.calculate_distance(point['real'], pos) for pos in mbs_pos]
         min_distance = min(MBS_distances)
         if min_distance > MBS_RADIUS:
-            print(f"User {user['user_id']} trajectory point {point['real']} is not in any MBS range")
+            print(f"User {user['user_id']} "
+                  f"trajectory point {utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                  f"is not in any MBS range")
             point['real_belongMBS'] = {'index': -1, 'loc': None, 'distance': min_distance}
         else:
             min_distance_index = MBS_distances.index(min_distance)
@@ -29,7 +41,9 @@ for user in omega_steps:
         RSU_distances = [utils.calculate_distance(point['real'], pos) for pos in rsu_pos]
         min_distance = min(RSU_distances)
         if min_distance > RSU_RADIUS:
-            print(f"User {user['user_id']} trajectory point {point['real']} is not in any RSU range")
+            print(f"User {user['user_id']} "
+                  f"trajectory point {utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                  f"is not in any RSU range")
             point['real_belongRSU'] = {'index': -1, 'loc': None, 'distance': min_distance}
         else:
             min_distance_index = RSU_distances.index(min_distance)
@@ -43,7 +57,9 @@ for user in omega_steps:
             MBS_distances = [utils.calculate_distance(omega_step, pos) for pos in mbs_pos]
             min_distance = min(MBS_distances)
             if min_distance > MBS_RADIUS:
-                print(f"User {user['user_id']} omega step No. {i}: {omega_step} is not in any MBS range")
+                print(f"User {user['user_id']} "
+                      f"omega step No. {i}: {utils.XYtoGPS(omega_step[0], omega_step[1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                      f"is not in any MBS range")
                 belongMBS[i] = {'index': -1, 'loc': None, 'distance': min_distance}
             else:
                 min_distance_index = MBS_distances.index(min_distance)
@@ -53,7 +69,9 @@ for user in omega_steps:
             RSU_distances = [utils.calculate_distance(omega_step, pos) for pos in rsu_pos]
             min_distance = min(RSU_distances)
             if min_distance > RSU_RADIUS:
-                print(f"User {user['user_id']} omega step No. {i}: {omega_step} is not in any RSU range")
+                print(f"User {user['user_id']} "
+                      f"omega step No. {i}: {utils.XYtoGPS(omega_step[0], omega_step[1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                      f"is not in any RSU range")
                 belongRSU[i] = {'index': -1, 'loc': None, 'distance': min_distance}
             else:
                 min_distance_index = RSU_distances.index(min_distance)
@@ -76,5 +94,48 @@ for user in omega_steps:
 
 print()
 
+# 打印概率，统计准确率
+total_count = 0
+accurate_count = 0
+for user in omega_steps:
+    for point in user['trajs']:
+        total_count += 1
+        if point['real_belongRSU']['index'] == max(point['omega_RSU_probability'].items(), key=lambda x: x[1])[0]:
+            if point['real_belongRSU']['index'] != -1:
+                accurate_count += 1
+        print(f"{user['user_id']};{point['real_belongRSU']['index']};{point['omega_RSU_probability']}")
+        # print(f"User {user['user_id']} trajectory point {point['real']} belongs: "
+        #       f"RSU No.{point['real_belongRSU']['index']} at position {point['real_belongRSU']['loc']}, "
+        #       f"and the probability: {point['omega_RSU_probability']}")
+print(f"Accuracy: {accurate_count / total_count}")
+
+# # 单独打印预测不准确的点（经纬度）
+# print("单独打印预测不准确的点（经纬度）：")
+# for user in omega_steps:
+#     for point in user['trajs']:
+#         if point['real_belongRSU']['index'] != max(point['omega_RSU_probability'].items(), key=lambda x: x[1])[0]:
+#             if point['real_belongRSU']['loc'] is not None:
+#                 print(f"User {user['user_id']} trajectory point "
+#                       f"{utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])}"
+#                       " belongs: "
+#                       f"RSU No.{point['real_belongRSU']['index']} at position "
+#                       f"{utils.XYtoGPS(point['real_belongRSU']['loc'][0], point['real_belongRSU']['loc'][1],
+#                                        CENTER_LOCATION[0], CENTER_LOCATION[1])}, "
+#                       f"and the probability: {point['omega_RSU_probability']}")
+#             else:
+#                 print(f"User {user['user_id']} trajectory point "
+#                       f"{utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])}"
+#                       " belongs: no RSU, "
+#                       f"and the probability: {point['omega_RSU_probability']}")
+
 with open("data/result/results.json", 'w') as f:
     json.dump(omega_steps, f)
+
+# 建立概率表
+probability_table = [[{} for _ in range(len(rsu_pos))] for _ in range(TRAJ_LEN)]
+for user in omega_steps:
+    for time_slot, point in enumerate(user['trajs']):
+        for rsu_num, probability in point['omega_RSU_probability'].items():
+            probability_table[time_slot][rsu_num][user['user_id']] = probability
+
+print()

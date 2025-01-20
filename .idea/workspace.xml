@@ -4,48 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="first commit">
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v2.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v3.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v4.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v5.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v6.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v7.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v8.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_gps_v9.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v2.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v3.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v4.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v5.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v6.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v7.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v8.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/mbs_rsu/rsu_added_xy_v9.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/1revise_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/2merge_users.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/3plot_traj.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/4discard_short_traj.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/all_filtered_users.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/all_user_omega_step.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/discarded_omega_steps.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/discarded_users.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/filtered_users2.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/filtered_users2_revised.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/filtered_users3.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/filtered_users3_revised.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/user_omega_step2.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/user_omega_step2_revised.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/user_omega_step3.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/user/user_omega_step3_revised.json" afterDir="false" />
+    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="probability table built">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/mbs_rsu/gps_to_xy.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/mbs_rsu/gps_to_xy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/result/results.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/result/results.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/user/filtered_users.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/user/filtered_users1.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/user/filtered_users_revised.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/user/filtered_users1_revised.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/user/user_omega_step.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/user/user_omega_step1.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/user/user_omega_step_revised.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/user/user_omega_step1_revised.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/user/3plot_traj.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/user/3plot_traj.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +36,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Python.2merge_users.executor": "Run",
-    "Python.3plot_traj.executor": "Debug",
+    "Python.3plot_traj.executor": "Run",
     "Python.4discard_short_traj.executor": "Run",
     "Python.gps_to_xy.executor": "Run",
     "Python.main.executor": "Debug",
@@ -125,12 +87,21 @@
       <option name="project" value="LOCAL" />
       <updated>1736965541797</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="probability table built">
+      <option name="closed" value="true" />
+      <created>1737385245520</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1737385245520</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="first commit" />
+    <MESSAGE value="probability table built" />
+    <option name="LAST_COMMIT_MESSAGE" value="probability table built" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -170,6 +141,7 @@
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="users1[1]" />
+        <watch expression="probability_table[0]" />
       </configuration>
     </watches-manager>
   </component>

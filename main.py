@@ -132,10 +132,42 @@ with open("data/result/results.json", 'w') as f:
     json.dump(omega_steps, f)
 
 # 建立概率表
-probability_table = [[{} for _ in range(len(rsu_pos))] for _ in range(TRAJ_LEN)]
+probability_table_user = [[{} for _ in range(len(rsu_pos))] for _ in range(TRAJ_LEN)]
 for user in omega_steps:
     for time_slot, point in enumerate(user['trajs']):
         for rsu_num, probability in point['omega_RSU_probability'].items():
-            probability_table[time_slot][rsu_num][user['user_id']] = probability
+            probability_table_user[time_slot][rsu_num][user['user_id']] = probability
 
 print()
+
+user_content = [
+    [0, 17, 18, 42, 63, 71, 84],
+    [1, 11, 13, 21, 47, 58, 74],
+    [6, 19, 24, 31, 34, 37, 40, 118, 119, ],
+    [3, 10, 26, 99, 101, ],
+    [5, 14, 16, 36, 38, 69, 73, 75, 78, 108, 109, ],
+]
+
+
+def get_user_related_content(user_id):
+    related_content = -1
+    for content_num, content_list in enumerate(user_content):
+        if user_id in content_list:
+            if related_content != -1:
+                raise ValueError(f"用户{user_id}被分配到多个内容")
+            related_content = content_num
+    return related_content
+
+
+probability_table_content = [[{} for _ in range(len(rsu_pos))] for _ in range(TRAJ_LEN)]
+for time_slot, table in enumerate(probability_table_user):
+    for rsu_id, rsu in enumerate(table):
+        for user_id, probability in rsu.items():
+            content_num = get_user_related_content(user_id)
+            probability_table_content[time_slot][rsu_id].setdefault(content_num, 0)
+            probability_table_content[time_slot][rsu_id][content_num] += probability
+
+print()
+
+with open("data/result/table.json", 'w') as f:
+    json.dump(probability_table_content, f)

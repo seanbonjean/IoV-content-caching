@@ -20,7 +20,7 @@ def plot_singleuser_traj(user, show_pred: bool = False, slice_length: int = 11, 
     if y_range is not None:
         plt.ylim(y_range)
 
-    plt.title("User Trajectory")
+    plt.title(f"User{user['user_id']} Trajectory")
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
     plt.legend()
@@ -44,7 +44,7 @@ def plot_singleuser_traj(user, show_pred: bool = False, slice_length: int = 11, 
             if y_range is not None:
                 plt.ylim(y_range)
 
-            plt.title("User Trajectory")
+            plt.title(f"User{user['user_id']} slice{i} Trajectory")
             plt.xlabel("Longitude")
             plt.ylabel("Latitude")
             plt.legend()

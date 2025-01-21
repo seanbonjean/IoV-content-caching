@@ -164,8 +164,12 @@ for time_slot, table in enumerate(probability_table_user):
     for rsu_id, rsu in enumerate(table):
         for user_id, probability in rsu.items():
             content_num = get_user_related_content(user_id)
-            probability_table_content[time_slot][rsu_id].setdefault(content_num, 0)
-            probability_table_content[time_slot][rsu_id][content_num] += probability
+            probability_table_content[time_slot][rsu_id].setdefault(content_num, 1)
+            probability_table_content[time_slot][rsu_id][content_num] *= 1 - probability
+for time_slot, table in enumerate(probability_table_content):
+    for rsu_id, rsu in enumerate(table):
+        for content_num, probability in rsu.items():
+            probability_table_content[time_slot][rsu_id][content_num] = 1 - probability
 
 print()
 

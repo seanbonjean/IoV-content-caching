@@ -3,7 +3,7 @@ import data_read as data
 import json
 import matplotlib.pyplot as plt
 
-CENTER_LOCATION = (116.36032115, 39.911045075)
+# CENTER_LOCATION = (116.36032115, 39.911045075)
 
 # need_trans = [
 #     [612.4243661125643, 477.3443340741371],
@@ -55,8 +55,11 @@ CENTER_LOCATION = (116.36032115, 39.911045075)
 # for user in omega_steps:
 #     print(user['user_id'])
 
-point1 = utils.GPStoXY(116.353649, 39.91671, CENTER_LOCATION[0], CENTER_LOCATION[1])
-point2 = utils.GPStoXY(116.353872, 39.91747, CENTER_LOCATION[0], CENTER_LOCATION[1])
+# point1 = utils.GPStoXY(116.353649, 39.91671, CENTER_LOCATION[0], CENTER_LOCATION[1])
+# point2 = utils.GPStoXY(116.353872, 39.91747, CENTER_LOCATION[0], CENTER_LOCATION[1])
+#
+# print(point1[0] - point2[0])
+# print(point1[1] - point2[1])
 
-print(point1[0] - point2[0])
-print(point1[1] - point2[1])
+data = data.read_json("data/result/results_final.json")
+print()

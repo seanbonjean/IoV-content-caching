@@ -11,7 +11,14 @@ def random_vector_gen(dimension: int, uniform: bool = False):
     if uniform:
         vector = np.random.rand(dimension)
         length = np.linalg.norm(vector)
-        return vector / length  # 归一化
+        vector = vector / length  # 归一化
+        return vector
     else:
         vector = np.random.rand(dimension)
         return vector
+
+
+if __name__ == '__main__':
+    vector = random_vector_gen(5)
+    print(vector)
+    print(type(vector))

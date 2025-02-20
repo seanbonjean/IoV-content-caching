@@ -9,7 +9,7 @@ def random_vector_gen(dimension: int, uniform: bool = False):
     :return: 归一化后的随机向量
     """
     if uniform:
-        vector = np.random.rand(dimension)
+        vector = np.random.uniform(-1, 1, dimension)  # -1~1的均匀分布
         length = np.linalg.norm(vector)
         vector = vector / length  # 归一化
         return vector

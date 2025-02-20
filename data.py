@@ -1,12 +1,15 @@
 import math
+import numpy as np
 import route_predict.data_read as data_read
-import v2i_entities
 
 MBS_NUM = 20
 RSU_NUM = 100
 VEHICLE_NUM = 69
 CONTENT_NUM = 5
-CONSTRAINT_NUM = 4
+CONSTRAINT_NUM = 1
+
+GRAND_TIME_SLOT_NUM = 7
+SMALL_TIME_SLOT_NUM = 10
 
 user_content = [
     [0, 17, 18, 42, 63, 71, 84, 120, 122, 123, 126, 135, 136, 137, 138, 140, 144, 145, 146, 149, 155, 156, 159, ],
@@ -89,4 +92,7 @@ v_m2c = b_m2c * math.log(1 + snr_m2c, 2)
 # !!! 注意数据中的user_id不连续，是因为之前有剔除，防止混淆；后面使用时换用0-69的连续id！
 trajs = data_read.read_json("route_predict/data/result/results_final.json")
 probability_table = data_read.read_json("route_predict/data/result/table_final.json")
+W_matrix = data_read.read_json("W_matrix.json")
 pass
+
+W_matrix = np.array(W_matrix)

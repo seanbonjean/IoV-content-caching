@@ -5,6 +5,16 @@ import utils
 from data import *
 
 
+def constraint_memory(x: np.array):
+    """计算已缓存内容大小"""
+    return sum([x[i] * content_size[i] for i in range(CONTENT_NUM)])
+
+
+def constraint_cost(x: np.array):
+    """计算单个rsu缓存cost"""
+    return sum([x[i] * alpha[i] * content_size[i] for i in range(CONTENT_NUM)])
+
+
 def f_func(x, user_list: list):
     """
     使用输入的x计算f(x)
@@ -30,8 +40,7 @@ def g_func(x, rsu_id: int):
     :return:
     """
     g_value = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
-    g_value[0] = sum([x[i] * alpha * content_size[i] for i in range(CONTENT_NUM)]) - \
-                 local_maximum_cache_cost[rsu_id]
+    g_value[0] = constraint_cost(x) - local_maximum_cache_cost[rsu_id]
     return g_value
 
 
@@ -39,11 +48,11 @@ class Agent:
     def __init__(self, rsu_id: int):
         self.id = rsu_id
         # TODO 参数待确定
-        self.alpha = 0.0
-        self.beta = 0.0
-        self.gamma = 0.0
-        self.ksai = 0.0
-        self.delta = 0.1
+        self.alpha = 5.0
+        self.beta = 5.0
+        self.gamma = 5.0
+        self.ksai = 0.5
+        self.delta = 0.7 * (0.5 * self.ksai)
 
         memory_spent = np.inf
         while memory_spent > rsu_caching_memory[rsu_id]:  # 检查是否满足rsu memory限制，首次进入while为inf确保进入
@@ -51,7 +60,7 @@ class Agent:
             # 随机生成维数为content数量、各元素取值范围为0~1的向量（这和“长度为1”的含义不同），然后乘1-ksai
             self.z = (1 - self.ksai) * utils.random_vector_gen(CONTENT_NUM)
             self.x = self.z + self.delta * self.u
-            memory_spent = sum([self.x[i] * content_size[i] for i in range(CONTENT_NUM)])  # 计算已缓存内容大小
+            memory_spent = constraint_memory(self.x)
 
         self.q_actual = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
         self.q_eval = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
@@ -113,7 +122,7 @@ class Agent:
                                                  np.array([0.0 for _ in range(CONTENT_NUM)]),
                                                  np.array([1.0 - self.ksai for _ in range(CONTENT_NUM)]))
             self.x = self.z + self.delta * self.u  # (9c)
-            memory_spent = sum([self.x[i] * content_size[i] for i in range(CONTENT_NUM)])  # 计算已缓存内容大小
+            memory_spent = constraint_memory(self.x)
             # (9d)
             q_before_project = (1.0 - self.beta * self.gamma) * self.q_eval + self.gamma * self.constraint_func
             self.q_actual = projection.project_onto_box(q_before_project,

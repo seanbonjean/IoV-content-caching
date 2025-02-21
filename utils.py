@@ -18,7 +18,16 @@ def random_vector_gen(dimension: int, uniform: bool = False):
         return vector
 
 
+def discretization(x: np.array) -> np.array:
+    # 使用阈值将值转换为 0 或 1
+    threshold = 0.5
+    discrete_array = (x >= threshold).astype(int)
+    return discrete_array
+
+
 if __name__ == '__main__':
-    vector = random_vector_gen(5)
-    print(vector)
-    print(type(vector))
+    # vector = random_vector_gen(5)
+    # print(vector)
+    # print(type(vector))
+    print(discretization(np.array([0.1, 0.2, 0.3, 0.4, 0.5])))
+    print(type(discretization(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))))

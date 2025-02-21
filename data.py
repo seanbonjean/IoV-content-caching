@@ -18,7 +18,7 @@ user_content = [
     [3, 10, 26, 99, 101, ],
     [5, 14, 16, 36, 38, 69, 73, 75, 78, 108, 109, 124, 130, 132, 134, 142, 143, 147, 148, 150, 153, 154, 158, ],
 ]
-content_size = [1.0, 1.0, 1.0, 1.0, 1.0, ]  # TODO 待确定
+content_size = [1.0, 0.5, 1.0, 1.0, 0.5, ]  # TODO 待确定
 
 
 def get_old_user_id(user_id_new: int) -> int:
@@ -54,32 +54,32 @@ def get_user_content(user_id_new: int) -> list:
 # TODO 待确定
 mbs_caching_memory = [7.0 for _ in range(MBS_NUM)]
 rsu_caching_memory = [3.0 for _ in range(RSU_NUM)]
-local_maximum_cache_cost = [10.0 for _ in range(RSU_NUM)]
+local_maximum_cache_cost = [1.5 for _ in range(RSU_NUM)]
 
 # TODO 参数待确定
-alpha = 0.7  # caching cost ratio
+alpha = [0.7, 0.5, 0.4, 0.7, 0.4, ]  # caching cost ratio
 # Vehicle to RSU
-p_v2r = 1
-G_v2r = 1
-epsilon_v2r = 1
-d_v2r = 1  # TODO distance目前是一个定值，下同
-sigma_v2r = 1
-b_v2r = 1
+p_v2r = 30  # mW
+G_v2r = 10  # dBi
+epsilon_v2r = 2.5
+d_v2r = 50  # m  # TODO distance目前是一个定值，下同
+sigma_v2r = 4e-2  # mW
+b_v2r = 0.800  # Gbps
 
 # Vehicle to MBS
-p_v2m = 1
-G_v2m = 1
-epsilon_v2m = 1
-d_v2m = 1
-sigma_v2m = 1
-b_v2m = 1
+p_v2m = 2000  # mW
+G_v2m = 20  # dBi
+epsilon_v2m = 3.5
+d_v2m = 2000  # m
+sigma_v2m = 4e-2  # mW
+b_v2m = 1.250  # Gbps
 
 # MBS to Cloud
 p_m2c = 1
-G_m2c = 1
-epsilon_m2c = 1
-d_m2c = 1
-sigma_m2c = 1
+G_m2c = 10  # dBi
+epsilon_m2c = 2.5
+d_m2c = 100000  # m
+sigma_m2c = 4e-18  # mW
 b_m2c = 1
 
 snr_v2r = p_v2r * G_v2r / (epsilon_v2r * d_v2r ** 2 * sigma_v2r ** 2)

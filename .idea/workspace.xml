@@ -4,16 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="fixing bug on probability table with content id">
-      <change afterPath="$PROJECT_DIR$/W_matrix.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build_Wmatrix.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/projection.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/route_predict/data/mbs_rsu/rsu_gps_final.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/route_predict/data/mbs_rsu/rsu_xy_final.txt" afterDir="false" />
+    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="finished algo and fixed those bug that will raise exception">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/route_predict/data/mbs_rsu/gps_to_xy.py" beforeDir="false" afterPath="$PROJECT_DIR$/route_predict/data/mbs_rsu/gps_to_xy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/v2i_entities.py" beforeDir="false" afterPath="$PROJECT_DIR$/v2i_entities.py" afterDir="false" />
     </list>
@@ -57,6 +51,7 @@
     "Python.plot_traj.executor": "Run",
     "Python.read_users.executor": "Debug",
     "Python.temp.executor": "Debug",
+    "Python.utils.executor": "Run",
     "Python.v2i_entities.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -127,7 +122,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737435688855</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="finished algo and fixed those bug that will raise exception">
+      <option name="closed" value="true" />
+      <created>1740059273341</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1740059273341</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -135,7 +138,8 @@
     <MESSAGE value="probability table built" />
     <MESSAGE value="probability table with content id" />
     <MESSAGE value="fixing bug on probability table with content id" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixing bug on probability table with content id" />
+    <MESSAGE value="finished algo and fixed those bug that will raise exception" />
+    <option name="LAST_COMMIT_MESSAGE" value="finished algo and fixed those bug that will raise exception" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -190,7 +194,30 @@
           <line>95</line>
           <option name="timeStamp" value="27" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>63</line>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>51</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="[rsu.agent.loss for rsu in RSU_entities]" language="Python" />
+        <watch expression="sum([rsu.agent.loss for rsu in RSU_entities])" language="Python" />
+        <watch expression="local_loss" language="Python" />
+        <watch expression="global_loss" language="Python" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

@@ -52,9 +52,12 @@ while True:
     for small_time_slot in range(SMALL_TIME_SLOT_NUM):
         print("Small Time Slot: ", small_time_slot)
         for rsu in RSU_entities:
-            rsu.agent.update_u()
-            rsu.agent.sample_f_g(rsu.serving_vehicles)
-            rsu.agent.update_zxq(W_matrix, RSU_entities, rsu.serving_vehicles)
+            memory_spent = np.inf
+            while memory_spent > rsu_caching_memory[rsu.id]:
+                rsu.agent.update_u()
+                rsu.agent.sample_f_g(rsu.serving_vehicles)
+                rsu.agent.update_zxq(W_matrix, RSU_entities, rsu.serving_vehicles)
+                memory_spent = v2i_entities.constraint_memory(rsu.agent.x)
         print("RSU Loss (continuous x):", [rsu.agent.loss for rsu in RSU_entities])
         print("RSU total Loss (continuous x):", sum([rsu.agent.loss for rsu in RSU_entities]))
     # TODO MBS的决策算法

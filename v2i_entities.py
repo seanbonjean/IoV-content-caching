@@ -111,23 +111,20 @@ class Agent:
         :param user_list: RSU负责服务的用户（从RSU对象属性中取值传入即可）
         """
         self.q_eval = sum([W_matrix[self.id][j] * RSU_entities[j].agent.q_actual for j in range(RSU_NUM)])  # (9a)
-        memory_spent = np.inf
-        while memory_spent > rsu_caching_memory[self.id]:
-            # (9b)
-            g_gradient = CONTENT_NUM / self.delta * g_func(self.z + self.delta * self.u, self.id) * self.u
-            g_gradient = g_gradient.reshape(CONTENT_NUM, CONSTRAINT_NUM)
-            a = CONTENT_NUM / self.delta * f_func(self.z + self.delta * self.u, user_list) * self.u + \
-                np.dot(g_gradient, self.q_eval.reshape(CONSTRAINT_NUM, 1)).reshape(CONTENT_NUM)
-            self.z = projection.project_onto_box(self.z - self.alpha * a,
-                                                 np.array([0.0 for _ in range(CONTENT_NUM)]),
-                                                 np.array([1.0 - self.ksai for _ in range(CONTENT_NUM)]))
-            self.x = self.z + self.delta * self.u  # (9c)
-            memory_spent = constraint_memory(self.x)
-            # (9d)
-            q_before_project = (1.0 - self.beta * self.gamma) * self.q_eval + self.gamma * self.constraint_func
-            self.q_actual = projection.project_onto_box(q_before_project,
-                                                        np.array([0.0 for _ in range(CONSTRAINT_NUM)]),
-                                                        None)
+        # (9b)
+        g_gradient = CONTENT_NUM / self.delta * g_func(self.z + self.delta * self.u, self.id) * self.u
+        g_gradient = g_gradient.reshape(CONTENT_NUM, CONSTRAINT_NUM)
+        a = CONTENT_NUM / self.delta * f_func(self.z + self.delta * self.u, user_list) * self.u + \
+            np.dot(g_gradient, self.q_eval.reshape(CONSTRAINT_NUM, 1)).reshape(CONTENT_NUM)
+        self.z = projection.project_onto_box(self.z - self.alpha * a,
+                                             np.array([0.0 for _ in range(CONTENT_NUM)]),
+                                             np.array([1.0 - self.ksai for _ in range(CONTENT_NUM)]))
+        self.x = self.z + self.delta * self.u  # (9c)
+        # (9d)
+        q_before_project = (1.0 - self.beta * self.gamma) * self.q_eval + self.gamma * self.constraint_func
+        self.q_actual = projection.project_onto_box(q_before_project,
+                                                    np.array([0.0 for _ in range(CONSTRAINT_NUM)]),
+                                                    None)
 
 
 class Cloud:

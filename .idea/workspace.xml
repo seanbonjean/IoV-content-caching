@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="set the arguments and fixed some bugs">
+    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="debug: fixing algo mistake">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/v2i_entities.py" beforeDir="false" afterPath="$PROJECT_DIR$/v2i_entities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,6 +21,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProblemsViewState">
@@ -51,7 +57,7 @@
     "Python.v2i_entities.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "matrix__at__decision",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/Users/sean-/Documents/PycharmProjects/IoV-content-caching/route_predict/data/mbs_rsu",
     "settings.editor.selected.configurable": "debugger.dataViews.python.type.renderers"
@@ -134,7 +140,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740145605037</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="debug: fixing algo mistake">
+      <option name="closed" value="true" />
+      <created>1740561997805</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1740561997805</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -144,7 +158,8 @@
     <MESSAGE value="fixing bug on probability table with content id" />
     <MESSAGE value="finished algo and fixed those bug that will raise exception" />
     <MESSAGE value="set the arguments and fixed some bugs" />
-    <option name="LAST_COMMIT_MESSAGE" value="set the arguments and fixed some bugs" />
+    <MESSAGE value="debug: fixing algo mistake" />
+    <option name="LAST_COMMIT_MESSAGE" value="debug: fixing algo mistake" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -206,7 +221,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>63</line>
+          <line>66</line>
           <option name="timeStamp" value="31" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

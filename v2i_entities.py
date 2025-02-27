@@ -32,6 +32,25 @@ def f_func(x, user_list: list):
     return f_value
 
 
+def delta_f(x, user_list: list, h=1e-5):
+    """
+    计算f(x)在x处的导数
+    :param x:
+    :param user_list:
+    :param h: 差分的步长，用来控制精度
+    :return:
+    """
+    delta_x = np.empty_like(x)
+    for i in range(CONTENT_NUM):
+        x_ph = np.copy(x)
+        x_mh = np.copy(x)
+        x_ph[i] = x_ph[i] + h  # 计算f(x+h)和f(x-h)，这里的做法是为了保证原x不被修改，且各个i的x+h和x-h互不影响
+        x_mh[i] = x_mh[i] - h
+        delta_x[i] = (f_func(x_ph, user_list) - f_func(x_mh, user_list)) / (2 * h)
+
+    return delta_x
+
+
 def g_func(x, rsu_id: int):
     """
     计算g(x)
@@ -48,22 +67,12 @@ class Agent:
     def __init__(self, rsu_id: int):
         self.id = rsu_id
         # TODO 参数待确定
-        self.alpha = 5.0
         self.beta = 5.0
-        self.gamma = 5.0
-        self.ksai = 0.5
-        self.delta = 0.7 * (0.5 * self.ksai)
+        self.nita = 7.0
 
-        memory_spent = np.inf
-        while memory_spent > rsu_caching_memory[rsu_id]:  # 检查是否满足rsu memory限制，首次进入while为inf确保进入
-            self.u = utils.random_vector_gen(CONTENT_NUM, uniform=True)  # 随机生成长度为1的向量，维数为content数量
-            # 随机生成维数为content数量、各元素取值范围为0~1的向量（这和“长度为1”的含义不同），然后乘1-ksai
-            self.z = (1 - self.ksai) * utils.random_vector_gen(CONTENT_NUM)
-            self.x = self.z + self.delta * self.u
-            memory_spent = constraint_memory(self.x)
-
-        self.q_actual = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
-        self.q_eval = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
+        self.x = np.array([0.0 for _ in range(CONTENT_NUM)])
+        self.y = np.array([0.0 for _ in range(CONTENT_NUM)])
+        self.lambd = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
 
         self.loss = 0.0  # 损失函数f_i,t
         self.constraint_func = np.array([0.0 for _ in range(CONSTRAINT_NUM)])  # 约束函数g_i,t
@@ -88,6 +97,9 @@ class Agent:
 
         self.q_actual = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
         self.q_eval = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
+
+    def algo(self, user_list: list):
+        self.y = self.x - self.beta * (delta_f(self.x, user_list) + )
 
     def update_u(self):
         """

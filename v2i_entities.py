@@ -5,17 +5,17 @@ import utils
 from data import *
 
 
-def constraint_memory(x: np.array):
+def constraint_memory(x: np.ndarray):
     """计算已缓存内容大小"""
     return sum([x[i] * content_size[i] for i in range(CONTENT_NUM)])
 
 
-def constraint_cost(x: np.array):
+def constraint_cost(x: np.ndarray):
     """计算单个rsu缓存cost"""
     return sum([x[i] * alpha[i] * content_size[i] for i in range(CONTENT_NUM)])
 
 
-def f_func(x, user_list: list):
+def f_func(x, user_list: list) -> float:
     """
     使用输入的x计算f(x)
     :param x: 输入值
@@ -32,7 +32,7 @@ def f_func(x, user_list: list):
     return f_value
 
 
-def delta_f(x, user_list: list, h=1e-5):
+def delta_f(x, user_list: list, h=1e-5) -> np.ndarray:
     """
     计算f(x)在x处的导数
     :param x:
@@ -51,23 +51,53 @@ def delta_f(x, user_list: list, h=1e-5):
     return delta_x
 
 
-def g_func(x, rsu_id: int):
+def g_func(x, rsu_id: int, cons_num: int = -1) -> np.ndarray | int:
     """
     计算g(x)
     :param x:
     :param rsu_id:
+    :param cons_num: 为-1时，计算所有constraint，否则计算对应constraint
     :return:
     """
-    g_value = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
-    g_value[0] = constraint_cost(x) - local_maximum_cache_cost[rsu_id]
+    if cons_num == -1:
+        # 计算所有constraint
+        g_value = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
+        g_value[0] = constraint_cost(x) - local_maximum_cache_cost[rsu_id]
+    elif cons_num == 0:
+        # 计算第0个constraint
+        g_value = constraint_cost(x) - local_maximum_cache_cost[rsu_id]
+    else:
+        raise ValueError("Invalid constraint number")
     return g_value
+
+
+def delta_g(x, const_num: int, rsu_id: int, h=1e-5) -> np.ndarray:
+    """
+    计算g(x)在x处的导数
+    :param x:
+    :param const_num: 指定求第几个constraint的导数
+    :param rsu_id:
+    :param h:
+    :return:
+    """
+    delta_x = np.empty_like(x)
+    for i in range(CONTENT_NUM):
+        x_ph = np.copy(x)
+        x_mh = np.copy(x)
+        x_ph[i] = x_ph[i] + h  # 计算f(x+h)和f(x-h)，这里的做法是为了保证原x不被修改，且各个i的x+h和x-h互不影响
+        x_mh[i] = x_mh[i] - h
+        delta_x[i] = (g_func(x_ph, rsu_id, cons_num=const_num) - g_func(x_mh, rsu_id, cons_num=const_num)) / (2 * h)
+
+    return delta_x
 
 
 class Agent:
     def __init__(self, rsu_id: int):
         self.id = rsu_id
         # TODO 参数待确定
+        self.alpha = 0.3  # 预测概率向量占决策向量x的占比
         self.beta = 5.0
+        self.delta = 0.01
         self.nita = 7.0
 
         self.x = np.array([0.0 for _ in range(CONTENT_NUM)])
@@ -86,20 +116,56 @@ class Agent:
         constr3: -x<=0
         """
 
-    def reinit(self, new_z: np.array):
-        memory_spent = np.inf
-        while memory_spent > rsu_caching_memory[self.id]:  # 检查是否满足rsu memory限制，首次进入while为inf确保进入
-            self.u = utils.random_vector_gen(CONTENT_NUM, uniform=True)  # 随机生成长度为1的向量，维数为content数量
-            # 随机生成维数为content数量、各元素取值范围为0~1的向量（这和“长度为1”的含义不同），然后乘1-ksai
-            self.z = (1 - self.ksai) * new_z
-            self.x = self.z + self.delta * self.u
-            memory_spent = sum([self.x[i] * content_size[i] for i in range(CONTENT_NUM)])  # 计算已缓存内容大小
+    def update_initial_x(self, prob_vect: np.ndarray) -> None:
+        self.x = self.alpha * self.x + (1 - self.alpha) * prob_vect
 
-        self.q_actual = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
-        self.q_eval = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
+    def update_x(self, A_matrix: np.ndarray, RSU_entities: list):
+        p = sum([A_matrix[self.id][j] * RSU_entities[j].agent.y for j in range(RSU_NUM)])
+        self.x = projection.project_onto_box(p,
+                                             np.array([0.0 for _ in range(CONTENT_NUM)]),
+                                             np.array([1.0 for _ in range(CONTENT_NUM)]))
+    # def reinit(self, new_z: np.ndarray):
+    #     memory_spent = np.inf
+    #     while memory_spent > rsu_caching_memory[self.id]:  # 检查是否满足rsu memory限制，首次进入while为inf确保进入
+    #         self.u = utils.random_vector_gen(CONTENT_NUM, uniform=True)  # 随机生成长度为1的向量，维数为content数量
+    #         # 随机生成维数为content数量、各元素取值范围为0~1的向量（这和“长度为1”的含义不同），然后乘1-ksai
+    #         self.z = (1 - self.ksai) * new_z
+    #         self.x = self.z + self.delta * self.u
+    #         memory_spent = sum([self.x[i] * content_size[i] for i in range(CONTENT_NUM)])  # 计算已缓存内容大小
+    #
+    #     self.q_actual = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
+    #     self.q_eval = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
 
-    def algo(self, user_list: list):
-        self.y = self.x - self.beta * (delta_f(self.x, user_list) + )
+    def update_y(self, user_list: list):
+        cons_sig = 0.0  # 步长右边那个sigma
+        for i in range(CONSTRAINT_NUM):
+            # i是约束函数的索引（第i个约束函数）
+            if self.constraint_func[i] > 0:
+                cons_sig += self.lambd[i] * delta_g(self.x, i, self.id)
+        self.y = self.x - self.beta * (delta_f(self.x, user_list) + cons_sig)
+
+    # def update_x(self, W_matrix: np.ndarray, RSU_entities: list):
+    #     p = sum([W_matrix[self.id][j] * RSU_entities[j].agent.y for j in range(RSU_NUM)])
+    #     self.x = projection.project_onto_box(p,
+    #                                          np.array([0.0 for _ in range(CONTENT_NUM)]),
+    #                                          np.array([1.0 for _ in range(CONTENT_NUM)]))
+    #     # fine tuning
+    #     memory_spent = np.inf
+    #     while memory_spent > rsu_caching_memory[self.id]:  # 检查是否满足rsu memory限制，首次进入while为inf确保进入
+    #         u = utils.random_vector_gen(CONTENT_NUM, uniform=True)
+    #         self.x = (1 - self.ksai) * self.x + self.ksai * u
+    #         self.x = projection.project_onto_box(self.x,
+    #                                              np.array([0.0 for _ in range(CONTENT_NUM)]),
+    #                                              np.array([1.0 for _ in range(CONTENT_NUM)]))
+    #         memory_spent = constraint_memory(self.x)  # 计算已缓存内容大小
+
+    def update_lambda(self):
+        g_val = g_func(self.x, self.id)
+        for i in range(CONSTRAINT_NUM):
+            if g_val[i] < 0:
+                self.lambd[i] = 0
+            else:
+                self.lambd[i] = g_val[i] / self.nita
 
     def update_u(self):
         """
@@ -115,28 +181,28 @@ class Agent:
         self.loss = f_func(self.x, user_list)
         self.constraint_func = g_func(self.x, self.id)
 
-    def update_zxq(self, W_matrix: np.array, RSU_entities: list, user_list: list):
-        """
-        实现(9a)~(9d)
-        :param W_matrix: mixing matrix
-        :param RSU_entities: 传入所有RSU实例（用于读取各RSU的q值）
-        :param user_list: RSU负责服务的用户（从RSU对象属性中取值传入即可）
-        """
-        self.q_eval = sum([W_matrix[self.id][j] * RSU_entities[j].agent.q_actual for j in range(RSU_NUM)])  # (9a)
-        # (9b)
-        g_gradient = CONTENT_NUM / self.delta * g_func(self.z + self.delta * self.u, self.id) * self.u
-        g_gradient = g_gradient.reshape(CONTENT_NUM, CONSTRAINT_NUM)
-        a = CONTENT_NUM / self.delta * f_func(self.z + self.delta * self.u, user_list) * self.u + \
-            np.dot(g_gradient, self.q_eval.reshape(CONSTRAINT_NUM, 1)).reshape(CONTENT_NUM)
-        self.z = projection.project_onto_box(self.z - self.alpha * a,
-                                             np.array([0.0 for _ in range(CONTENT_NUM)]),
-                                             np.array([1.0 - self.ksai for _ in range(CONTENT_NUM)]))
-        self.x = self.z + self.delta * self.u  # (9c)
-        # (9d)
-        q_before_project = (1.0 - self.beta * self.gamma) * self.q_eval + self.gamma * self.constraint_func
-        self.q_actual = projection.project_onto_box(q_before_project,
-                                                    np.array([0.0 for _ in range(CONSTRAINT_NUM)]),
-                                                    None)
+    # def update_zxq(self, W_matrix: np.ndarray, RSU_entities: list, user_list: list):
+    #     """
+    #     实现(9a)~(9d)
+    #     :param W_matrix: mixing matrix
+    #     :param RSU_entities: 传入所有RSU实例（用于读取各RSU的q值）
+    #     :param user_list: RSU负责服务的用户（从RSU对象属性中取值传入即可）
+    #     """
+    #     self.q_eval = sum([W_matrix[self.id][j] * RSU_entities[j].agent.q_actual for j in range(RSU_NUM)])  # (9a)
+    #     # (9b)
+    #     g_gradient = CONTENT_NUM / self.delta * g_func(self.z + self.delta * self.u, self.id) * self.u
+    #     g_gradient = g_gradient.reshape(CONTENT_NUM, CONSTRAINT_NUM)
+    #     a = CONTENT_NUM / self.delta * f_func(self.z + self.delta * self.u, user_list) * self.u + \
+    #         np.dot(g_gradient, self.q_eval.reshape(CONSTRAINT_NUM, 1)).reshape(CONTENT_NUM)
+    #     self.z = projection.project_onto_box(self.z - self.alpha * a,
+    #                                          np.array([0.0 for _ in range(CONTENT_NUM)]),
+    #                                          np.array([1.0 - self.ksai for _ in range(CONTENT_NUM)]))
+    #     self.x = self.z + self.delta * self.u  # (9c)
+    #     # (9d)
+    #     q_before_project = (1.0 - self.beta * self.gamma) * self.q_eval + self.gamma * self.constraint_func
+    #     self.q_actual = projection.project_onto_box(q_before_project,
+    #                                                 np.array([0.0 for _ in range(CONSTRAINT_NUM)]),
+    #                                                 None)
 
 
 class Cloud:

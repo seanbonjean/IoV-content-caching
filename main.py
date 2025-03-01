@@ -36,33 +36,64 @@ grand_time_slot = -1  # 时间片计数器
 
 # 大时间片的循环
 while True:
+    # 更新环境（用户位置等），并判断是否达到最后一个时间片需要结束循环
     if grand_tick_pass() == "end":
         break
     print()
     print("---Grand Time Slot: ", grand_time_slot)
-    # 大时间片开始前更新z
-    # TODO 如何保持z中赋入的概率向量信息不被更新掉？
+    # for rsu in RSU_entities:
+    #     rsu.agent.sample_f_g(rsu.serving_vehicles)
+    #     rsu.agent.update_y(rsu.serving_vehicles)
+    # # 这里要拆开的原因是，需要先更新所有rsu的y，然后才能互相communicate更新x
+    # for rsu in RSU_entities:
+    #     rsu.agent.update_x(W_matrix, RSU_entities)
+    #     rsu.agent.update_lambda()
     for rsu in RSU_entities:
-        new_z_dict = probability_table[grand_time_slot][rsu.id]
+        # 构建概率向量
+        prob_vect_dict = probability_table[grand_time_slot][rsu.id]
         for i in range(CONTENT_NUM):
-            new_z_dict.setdefault(str(i), 0)  # 无概率content补0
-        new_z = np.array([new_z_dict[str(i)] for i in range(CONTENT_NUM)])  # 字典类型转列表，生成numpy向量
-        rsu.agent.reinit(new_z)
-    # 小时间片，根据算法更新agent中的参数
+            prob_vect_dict.setdefault(str(i), 0)  # 无概率content补0
+        prob_vect = np.array([prob_vect_dict[str(i)] for i in range(CONTENT_NUM)])  # 字典类型转列表，生成numpy向量
+        # 根据alpha比例，使用概率向量更新x向量的初始值
+        rsu.agent.update_initial_x(prob_vect)
+    # 小时间片
     for small_time_slot in range(SMALL_TIME_SLOT_NUM):
         print("Small Time Slot: ", small_time_slot)
         for rsu in RSU_entities:
-            memory_spent = np.inf
-            while memory_spent > rsu_caching_memory[rsu.id]:
-                rsu.agent.update_u()
-                rsu.agent.sample_f_g(rsu.serving_vehicles)
-                rsu.agent.update_zxq(W_matrix, RSU_entities, rsu.serving_vehicles)
-                memory_spent = v2i_entities.constraint_memory(rsu.agent.x)
+            # 采样loss func: f 和 constraint func: g
+            rsu.agent.sample_f_g(rsu.serving_vehicles)
+            # 计算y值
+            rsu.agent.update_y(rsu.serving_vehicles)
+        # 这里要拆开的原因是，需要先更新所有rsu的y，然后才能互相communicate更新x
+
+        # 这个feasible子集用于存储未被memory constraint终止fine-tuning的rsu集合
+        RSU_entities_feasible = RSU_entities.copy()
+        for rsu in RSU_entities:
+            prev_x = rsu.agent.x  # 保存上一时刻的x，若下一时刻的x不满足约束条件，则回滚x
+            # 更新p并投影到box，得到下一时刻t+1的决策x
+            rsu.agent.update_x(A_matrix_list[grand_time_slot], RSU_entities)
+            # 根据t+1时的x更新lambda
+            rsu.agent.update_lambda()
+            # 离散化x
+            decision_x = utils.discretization(rsu.agent.x)
+            # 检查内存限制
+            memory_spent = v2i_entities.constraint_memory(decision_x)
+            if memory_spent > rsu_caching_memory[rsu.id]:
+                rsu.agent.x = prev_x
+                RSU_entities_feasible.remove(rsu)
+        continuous_x = [rsu.agent.x for rsu in RSU_entities]
+        print("RSU Decision x (continuous):", continuous_x)
         print("RSU Loss (continuous x):", [rsu.agent.loss for rsu in RSU_entities])
         print("RSU total Loss (continuous x):", sum([rsu.agent.loss for rsu in RSU_entities]))
     # TODO MBS的决策算法
     # TODO 计算总的目标函数、审查全局约束条件（现在还不是总的，少MBS决策结果）
     print()
+    # 各rsu的决策x（连续形态）
+    continuous_x = [rsu.agent.x for rsu in RSU_entities]
+    print("RSU Decision x (continuous):", continuous_x)
+    # 各rsu的决策x（离散形态）
+    discrete_x = [utils.discretization(rsu.agent.x) for rsu in RSU_entities]
+    print("RSU Decision x (discrete):", discrete_x)
     # 各rsu内用户的delay
     local_loss = [v2i_entities.f_func(utils.discretization(rsu.agent.x), rsu.serving_vehicles) for rsu in RSU_entities]
     print("RSU Loss (discrete x):", local_loss)
@@ -70,7 +101,8 @@ while True:
     global_loss = sum(local_loss)
     print("RSU total Loss (discrete x):", global_loss)
     # 各rsu是否满足内存约束，为布尔量列表
-    memory_constraint = [v2i_entities.constraint_memory(rsu.agent.x) <= rsu.caching_memory for rsu in RSU_entities]
+    memory_constraint = [v2i_entities.constraint_memory(utils.discretization(rsu.agent.x)) <= rsu.caching_memory for rsu
+                         in RSU_entities]
     # 内存约束是否全部满足
     memory_constraint_satisfied = all(memory_constraint)
     print("Memory Constraint Satisfied: ", memory_constraint_satisfied)
@@ -78,7 +110,8 @@ while True:
     local_cost_constraint = [v2i_entities.g_func(utils.discretization(rsu.agent.x), rsu.id) <= 0 for rsu in
                              RSU_entities]
     # 总cost
-    global_cost_constraint = sum([v2i_entities.constraint_cost(rsu.agent.x) for rsu in RSU_entities])
+    global_cost_constraint = sum(
+        [v2i_entities.constraint_cost(utils.discretization(rsu.agent.x)) for rsu in RSU_entities])
     print("Global Cost Constraint: ", global_cost_constraint)
     # 总cost是否小于总cost约束
     global_cost_constraint_satisfied = global_cost_constraint <= sum(local_maximum_cache_cost)

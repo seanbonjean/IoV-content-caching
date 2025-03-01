@@ -4,8 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="debug: fixing algo mistake">
+    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="set the arguments and fixed some bugs">
+      <change afterPath="$PROJECT_DIR$/A_matrix.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build_Amatrix.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/v2i_entities.py" beforeDir="false" afterPath="$PROJECT_DIR$/v2i_entities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -28,6 +33,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;seanbonjean&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:seanbonjean/IoV-content-caching.git&quot;,
+    &quot;accountId&quot;: &quot;9cff2cc9-73af-4d02-86d7-c110876674ca&quot;
+  }
+}</component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -40,29 +57,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.2merge_users.executor": "Run",
-    "Python.3plot_traj.executor": "Run",
-    "Python.4discard_short_traj.executor": "Run",
-    "Python.build_Wmatrix.executor": "Run",
-    "Python.data.executor": "Debug",
-    "Python.gps_to_xy.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.merge_users.executor": "Run",
-    "Python.plot_traj.executor": "Run",
-    "Python.read_users.executor": "Debug",
-    "Python.temp.executor": "Debug",
-    "Python.utils.executor": "Run",
-    "Python.v2i_entities.executor": "Debug",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "matrix__at__decision",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/sean-/Documents/PycharmProjects/IoV-content-caching/route_predict/data/mbs_rsu",
-    "settings.editor.selected.configurable": "debugger.dataViews.python.type.renderers"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.2merge_users.executor&quot;: &quot;Run&quot;,
+    &quot;Python.3plot_traj.executor&quot;: &quot;Run&quot;,
+    &quot;Python.4discard_short_traj.executor&quot;: &quot;Run&quot;,
+    &quot;Python.build_Amatrix.executor&quot;: &quot;Run&quot;,
+    &quot;Python.build_Wmatrix.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.gps_to_xy.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.merge_users.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plot_traj.executor&quot;: &quot;Run&quot;,
+    &quot;Python.read_users.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.temp.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.v2i_entities.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;matrix__at__decision&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/sean-/Documents/PycharmProjects/IoV-content-caching/route_predict/data/mbs_rsu&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\sean-\Documents\PycharmProjects\IoV-content-caching\route_predict\data\mbs_rsu" />
@@ -79,7 +97,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
+        <option value="bundled-python-sdk-0e3be3396995-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.23339.19" />
       </set>
     </attachedChunks>
   </component>
@@ -140,15 +158,7 @@
       <option name="project" value="LOCAL" />
       <updated>1740145605037</updated>
     </task>
-    <task id="LOCAL-00007" summary="debug: fixing algo mistake">
-      <option name="closed" value="true" />
-      <created>1740561997805</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1740561997805</updated>
-    </task>
-    <option name="localTasksCounter" value="8" />
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -158,8 +168,7 @@
     <MESSAGE value="fixing bug on probability table with content id" />
     <MESSAGE value="finished algo and fixed those bug that will raise exception" />
     <MESSAGE value="set the arguments and fixed some bugs" />
-    <MESSAGE value="debug: fixing algo mistake" />
-    <option name="LAST_COMMIT_MESSAGE" value="debug: fixing algo mistake" />
+    <option name="LAST_COMMIT_MESSAGE" value="set the arguments and fixed some bugs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -211,23 +220,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/data.py</url>
-          <line>95</line>
+          <line>96</line>
           <option name="timeStamp" value="27" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>38</line>
-          <option name="timeStamp" value="28" />
+          <url>file://$PROJECT_DIR$/build_Amatrix.py</url>
+          <line>23</line>
+          <option name="timeStamp" value="35" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>66</line>
-          <option name="timeStamp" value="31" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>51</line>
-          <option name="timeStamp" value="34" />
+          <line>107</line>
+          <option name="timeStamp" value="37" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

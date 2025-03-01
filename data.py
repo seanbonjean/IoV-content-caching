@@ -93,6 +93,8 @@ v_m2c = b_m2c * math.log(1 + snr_m2c, 2)
 trajs = data_read.read_json("route_predict/data/result/results_final.json")
 probability_table = data_read.read_json("route_predict/data/result/table_final.json")
 W_matrix = data_read.read_json("W_matrix.json")
+A_matrix_list = data_read.read_json("A_matrix.json")
 pass
 
 W_matrix = np.array(W_matrix)
+A_matrix_list = list(map(lambda x: np.array(x), A_matrix_list))

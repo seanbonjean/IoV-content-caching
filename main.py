@@ -32,9 +32,10 @@ MBS_entities = [v2i_entities.MBS(mbs_caching_memory[i]) for i in range(MBS_NUM)]
 RSU_entities = [v2i_entities.RSU(i, rsu_caching_memory[i]) for i in range(RSU_NUM)]
 vehicle_entities = [v2i_entities.Vehicle() for _ in range(VEHICLE_NUM)]
 
-grand_time_slot = -1  # 时间片计数器
+grand_time_slot = 0  # 时间片计数器
 
 # 大时间片的循环
+# 大时间片从1开始，舍弃0时间，因为0时间没有对应的A矩阵
 while True:
     # 更新环境（用户位置等），并判断是否达到最后一个时间片需要结束循环
     if grand_tick_pass() == "end":
@@ -71,7 +72,7 @@ while True:
         for rsu in RSU_entities:
             prev_x = rsu.agent.x  # 保存上一时刻的x，若下一时刻的x不满足约束条件，则回滚x
             # 更新p并投影到box，得到下一时刻t+1的决策x
-            rsu.agent.update_x(A_matrix_list[grand_time_slot], RSU_entities)
+            rsu.agent.update_x(A_matrix_list[grand_time_slot - 1], RSU_entities)
             # 根据t+1时的x更新lambda
             rsu.agent.update_lambda()
             # 离散化x

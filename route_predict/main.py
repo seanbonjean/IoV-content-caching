@@ -3,35 +3,44 @@ import utils
 import json
 
 MBS_RADIUS = 600  # meters
-RSU_RADIUS = 100  # meters
+RSU_RADIUS = 170  # meters
 
 CENTER_LOCATION = (116.36032115, 39.911045075)
 
-TRAJ_LEN = 7  # 拥有完整omega step的轨迹长度
+TRAJ_LEN = 37  # 拥有完整omega step的轨迹长度
 
 # users = data.read_json("data/user/discarded_users.json")
 # omega_steps = data.read_json("data/user/discarded_omega_steps.json")
-users = data.read_json("data/user/all_filtered_users.json")
-omega_steps = data.read_json("data/user/all_user_omega_step.json")
+users = data.read_json("data/user/filtered_users_0307_revised.json")
+omega_steps = data.read_json("data/user/user_omega_step_0307_revised.json")
 mbs_pos = data.read_mbs_rsu("data/mbs_rsu/mbs_xy.txt")
 # rsu_pos = data.read_mbs_rsu("data/mbs_rsu/rsu_xy.txt") + data.read_mbs_rsu("data/mbs_rsu/rsu_added_xy_v8.txt")
-rsu_pos = data.read_mbs_rsu("data/mbs_rsu/rsu_added_xy_v9.txt")
+rsu_pos = data.read_mbs_rsu("data/mbs_rsu/rsu_xy_final.txt")
 
 print()
+
+real_coverage_log = open("real_coverage.txt", 'w')
+pred_coverage_log = open("pred_coverage.txt", 'w')
+# real_coverage_log.write("user ID; traj num; point; RSU or MBS\n")
+# pred_coverage_log.write("user ID; traj num; omega step num; point; RSU or MBS\n")
 
 # omega_steps = omega_steps[:18]
 
 # 寻找每个点属于哪个RSU和MBS
 for user in omega_steps:
-    for point in user['trajs']:
+    for traj_num, point in enumerate(user['trajs']):
         # 真实点
         # MBS
         MBS_distances = [utils.calculate_distance(point['real'], pos) for pos in mbs_pos]
         min_distance = min(MBS_distances)
         if min_distance > MBS_RADIUS:
+            not_cover_point = utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])
             print(f"User {user['user_id']} "
-                  f"trajectory point {utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                  f"trajectory point {not_cover_point} "
                   f"is not in any MBS range")
+            # real_coverage_log.write(f"{user['user_id']},{traj_num},"
+            #                         f"{not_cover_point[0]},{not_cover_point[1]},M\n")
+            real_coverage_log.write(f"{not_cover_point[0]},{not_cover_point[1]}\n")
             point['real_belongMBS'] = {'index': -1, 'loc': None, 'distance': min_distance}
         else:
             min_distance_index = MBS_distances.index(min_distance)
@@ -41,9 +50,13 @@ for user in omega_steps:
         RSU_distances = [utils.calculate_distance(point['real'], pos) for pos in rsu_pos]
         min_distance = min(RSU_distances)
         if min_distance > RSU_RADIUS:
+            not_cover_point = utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])
             print(f"User {user['user_id']} "
-                  f"trajectory point {utils.XYtoGPS(point['real'][0], point['real'][1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                  f"trajectory point {not_cover_point} "
                   f"is not in any RSU range")
+            # real_coverage_log.write(f"{user['user_id']},{traj_num},"
+            #                         f"{not_cover_point[0]},{not_cover_point[1]},R\n")
+            real_coverage_log.write(f"{not_cover_point[0]},{not_cover_point[1]}\n")
             point['real_belongRSU'] = {'index': -1, 'loc': None, 'distance': min_distance}
         else:
             min_distance_index = RSU_distances.index(min_distance)
@@ -57,9 +70,13 @@ for user in omega_steps:
             MBS_distances = [utils.calculate_distance(omega_step, pos) for pos in mbs_pos]
             min_distance = min(MBS_distances)
             if min_distance > MBS_RADIUS:
+                not_cover_point = utils.XYtoGPS(omega_step[0], omega_step[1], CENTER_LOCATION[0], CENTER_LOCATION[1])
                 print(f"User {user['user_id']} "
-                      f"omega step No. {i}: {utils.XYtoGPS(omega_step[0], omega_step[1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                      f"omega step No. {i}: {not_cover_point} "
                       f"is not in any MBS range")
+                # pred_coverage_log.write(f"{user['user_id']},{traj_num},{i},"
+                #                         f"{not_cover_point[0]},{not_cover_point[1]},M\n")
+                pred_coverage_log.write(f"{not_cover_point[0]},{not_cover_point[1]}\n")
                 belongMBS[i] = {'index': -1, 'loc': None, 'distance': min_distance}
             else:
                 min_distance_index = MBS_distances.index(min_distance)
@@ -69,9 +86,13 @@ for user in omega_steps:
             RSU_distances = [utils.calculate_distance(omega_step, pos) for pos in rsu_pos]
             min_distance = min(RSU_distances)
             if min_distance > RSU_RADIUS:
+                not_cover_point = utils.XYtoGPS(omega_step[0], omega_step[1], CENTER_LOCATION[0], CENTER_LOCATION[1])
                 print(f"User {user['user_id']} "
-                      f"omega step No. {i}: {utils.XYtoGPS(omega_step[0], omega_step[1], CENTER_LOCATION[0], CENTER_LOCATION[1])} "
+                      f"omega step No. {i}: {not_cover_point} "
                       f"is not in any RSU range")
+                # pred_coverage_log.write(f"{user['user_id']},{traj_num},{i},"
+                #                         f"{not_cover_point[0]},{not_cover_point[1]},R\n")
+                pred_coverage_log.write(f"{not_cover_point[0]},{not_cover_point[1]}\n")
                 belongRSU[i] = {'index': -1, 'loc': None, 'distance': min_distance}
             else:
                 min_distance_index = RSU_distances.index(min_distance)
@@ -97,17 +118,21 @@ print()
 # 打印概率，统计准确率
 total_count = 0
 accurate_count = 0
+exist_count = 0
 for user in omega_steps:
     for point in user['trajs']:
         total_count += 1
         if point['real_belongRSU']['index'] == max(point['omega_RSU_probability'].items(), key=lambda x: x[1])[0]:
             if point['real_belongRSU']['index'] != -1:
                 accurate_count += 1
+        if point['real_belongRSU']['index'] in point['omega_RSU_probability'].keys():
+            exist_count += 1
         print(f"{user['user_id']};{point['real_belongRSU']['index']};{point['omega_RSU_probability']}")
         # print(f"User {user['user_id']} trajectory point {point['real']} belongs: "
         #       f"RSU No.{point['real_belongRSU']['index']} at position {point['real_belongRSU']['loc']}, "
         #       f"and the probability: {point['omega_RSU_probability']}")
 print(f"Accuracy: {accurate_count / total_count}")
+print(f"Accuracy*: {exist_count / total_count}")
 
 # # 单独打印预测不准确的点（经纬度）
 # print("单独打印预测不准确的点（经纬度）：")
@@ -128,7 +153,7 @@ print(f"Accuracy: {accurate_count / total_count}")
 #                       " belongs: no RSU, "
 #                       f"and the probability: {point['omega_RSU_probability']}")
 
-with open("data/result/results.json", 'w') as f:
+with open("data/result/results_0307.json", 'w') as f:
     json.dump(omega_steps, f)
 
 # 建立概率表
@@ -140,13 +165,15 @@ for user in omega_steps:
 
 print()
 
-user_content = [
-    [0, 17, 18, 42, 63, 71, 84],
-    [1, 11, 13, 21, 47, 58, 74],
-    [6, 19, 24, 31, 34, 37, 40, 118, 119, ],
-    [3, 10, 26, 99, 101, ],
-    [5, 14, 16, 36, 38, 69, 73, 75, 78, 108, 109, ],
-]
+# user_content = [
+#     [0, 17, 18, 42, 63, 71, 84],
+#     [1, 11, 13, 21, 47, 58, 74],
+#     [6, 19, 24, 31, 34, 37, 40, 118, 119, ],
+#     [3, 10, 26, 99, 101, ],
+#     [5, 14, 16, 36, 38, 69, 73, 75, 78, 108, 109, ],
+# ]
+
+user_content = [[i for i in range(30 * j, 30 * (j + 1))] for j in range(10)]
 
 
 def get_user_related_content(user_id):
@@ -173,5 +200,5 @@ for time_slot, table in enumerate(probability_table_content):
 
 print()
 
-with open("data/result/table.json", 'w') as f:
+with open("data/result/table_0307.json", 'w') as f:
     json.dump(probability_table_content, f)

@@ -4,21 +4,22 @@ import route_predict.data_read as data_read
 
 MBS_NUM = 20
 RSU_NUM = 100
-VEHICLE_NUM = 69
-CONTENT_NUM = 5
+VEHICLE_NUM = 264
+CONTENT_NUM = 10
 CONSTRAINT_NUM = 1
 
-GRAND_TIME_SLOT_NUM = 7
+GRAND_TIME_SLOT_NUM = 37
 SMALL_TIME_SLOT_NUM = 10
 
-user_content = [
-    [0, 17, 18, 42, 63, 71, 84, 120, 122, 123, 126, 135, 136, 137, 138, 140, 144, 145, 146, 149, 155, 156, 159, ],
-    [1, 11, 13, 21, 47, 58, 74, ],
-    [6, 19, 24, 31, 34, 37, 40, 118, 119, 127, 128, ],
-    [3, 10, 26, 99, 101, ],
-    [5, 14, 16, 36, 38, 69, 73, 75, 78, 108, 109, 124, 130, 132, 134, 142, 143, 147, 148, 150, 153, 154, 158, ],
-]
-content_size = [1.0, 0.5, 1.0, 1.0, 0.5, ]  # TODO 待确定
+# user_content = [
+#     [0, 17, 18, 42, 63, 71, 84, 120, 122, 123, 126, 135, 136, 137, 138, 140, 144, 145, 146, 149, 155, 156, 159, ],
+#     [1, 11, 13, 21, 47, 58, 74, ],
+#     [6, 19, 24, 31, 34, 37, 40, 118, 119, 127, 128, ],
+#     [3, 10, 26, 99, 101, ],
+#     [5, 14, 16, 36, 38, 69, 73, 75, 78, 108, 109, 124, 130, 132, 134, 142, 143, 147, 148, 150, 153, 154, 158, ],
+# ]
+user_content = [[i for i in range(30 * j, 30 * (j + 1))] for j in range(10)]
+content_size = [1.0, 0.5, 1.0, 1.0, 0.5, 1.0, 0.5, 1.0, 1.0, 0.5, ]  # TODO 待确定
 
 
 def get_old_user_id(user_id_new: int) -> int:
@@ -57,7 +58,7 @@ rsu_caching_memory = [3.0 for _ in range(RSU_NUM)]
 local_maximum_cache_cost = [1.5 for _ in range(RSU_NUM)]
 
 # TODO 参数待确定
-alpha = [0.7, 0.5, 0.4, 0.7, 0.4, ]  # caching cost ratio
+alpha = [0.7, 0.5, 0.4, 0.7, 0.4, 0.7, 0.5, 0.4, 0.7, 0.4, ]  # caching cost ratio
 # Vehicle to RSU
 p_v2r = 30  # mW
 G_v2r = 10  # dBi
@@ -90,11 +91,12 @@ v_v2m = b_v2m * math.log(1 + snr_v2m, 2)
 v_m2c = b_m2c * math.log(1 + snr_m2c, 2)
 
 # !!! 注意数据中的user_id不连续，是因为之前有剔除，防止混淆；后面使用时换用0-69的连续id！
-trajs = data_read.read_json("route_predict/data/result/results_final.json")
-probability_table = data_read.read_json("route_predict/data/result/table_final.json")
-W_matrix = data_read.read_json("W_matrix.json")
+trajs = data_read.read_json("route_predict/data/result/results_0307.json")
+probability_table = data_read.read_json("route_predict/data/result/table_0307.json")
+# W_matrix = data_read.read_json("W_matrix.json")
 A_matrix_list = data_read.read_json("A_matrix.json")
 pass
 
-W_matrix = np.array(W_matrix)
+# W_matrix = np.array(W_matrix)
 A_matrix_list = list(map(lambda x: np.array(x), A_matrix_list))
+pass

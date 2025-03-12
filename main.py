@@ -2,6 +2,8 @@ from data import *
 import v2i_entities
 import utils
 
+log_recorder = open("log_A_only_row_norm.txt", "w")
+
 
 def grand_tick_pass() -> str:
     """
@@ -11,14 +13,16 @@ def grand_tick_pass() -> str:
     grand_time_slot += 1
     if grand_time_slot >= GRAND_TIME_SLOT_NUM:
         return "end"
+    for rsu in RSU_entities:
+        rsu.serving_vehicles = []
+    for mbs in MBS_entities:
+        mbs.serving_vehicles = []
     for i, vehicle in enumerate(trajs):
         belong_MBS = vehicle['trajs'][grand_time_slot]['real_belongMBS']['index']
         belong_RSU = vehicle['trajs'][grand_time_slot]['real_belongRSU']['index']
         vehicle_entities[i].current_real_belong_MBS = belong_MBS
         vehicle_entities[i].current_real_belong_RSU = belong_RSU
-        RSU_entities[belong_RSU].serving_vehicles = []
         RSU_entities[belong_RSU].serving_vehicles.append(i)
-        MBS_entities[belong_MBS].serving_vehicles = []
         MBS_entities[belong_MBS].serving_vehicles.append(i)
         vehicle_entities[i].current_pred_belong_MBS = map(lambda x: x['index'],
                                                           vehicle['trajs'][grand_time_slot]['omegastep_belongMBS'])
@@ -41,7 +45,9 @@ while True:
     if grand_tick_pass() == "end":
         break
     print()
-    print("---Grand Time Slot: ", grand_time_slot)
+    log_recorder.write("\n" * 7)
+    print("-----Grand Time Slot: ", grand_time_slot)
+    log_recorder.write(f"-----Grand Time Slot: {grand_time_slot}\n")
     # for rsu in RSU_entities:
     #     rsu.agent.sample_f_g(rsu.serving_vehicles)
     #     rsu.agent.update_y(rsu.serving_vehicles)
@@ -59,7 +65,10 @@ while True:
         rsu.agent.update_initial_x(prob_vect)
     # 小时间片
     for small_time_slot in range(SMALL_TIME_SLOT_NUM):
-        print("Small Time Slot: ", small_time_slot)
+        print()
+        log_recorder.write("\n")
+        print("---Small Time Slot: ", small_time_slot)
+        log_recorder.write(f"---Small Time Slot: {small_time_slot}\n")
         for rsu in RSU_entities:
             # 采样loss func: f 和 constraint func: g
             rsu.agent.sample_f_g(rsu.serving_vehicles)
@@ -82,31 +91,53 @@ while True:
             if memory_spent > rsu_caching_memory[rsu.id]:
                 rsu.agent.x = prev_x
                 RSU_entities_feasible.remove(rsu)
-        continuous_x = [rsu.agent.x for rsu in RSU_entities]
-        print("RSU Decision x (continuous):", continuous_x)
-        print("RSU Loss (continuous x):", [rsu.agent.loss for rsu in RSU_entities])
-        print("RSU total Loss (continuous x):", sum([rsu.agent.loss for rsu in RSU_entities]))
+        print()
+        log_recorder.write("\n")
+        for rsu in RSU_entities:
+            print(f"RSU{rsu.id} Decision x (continuous):", [round(num, 4) for num in rsu.agent.x.tolist()])
+            log_recorder.write(
+                f"RSU{rsu.id} Decision x (continuous): {[round(num, 4) for num in rsu.agent.x.tolist()]}\n")
+        print()
+        log_recorder.write("\n")
+        rsu_loss = [rsu.agent.loss for rsu in RSU_entities]
+        print("RSU Loss (continuous x):", rsu_loss)
+        log_recorder.write(f"RSU Loss (continuous x): {rsu_loss}\n")
+        print()
+        log_recorder.write("\n")
+        rsu_total_loss = sum([rsu.agent.loss for rsu in RSU_entities])
+        print("RSU total Loss (continuous x):", rsu_total_loss)
+        log_recorder.write(f"RSU total Loss (continuous x): {rsu_total_loss}\n")
     # TODO MBS的决策算法
     # TODO 计算总的目标函数、审查全局约束条件（现在还不是总的，少MBS决策结果）
     print()
+    log_recorder.write("\n" * 7)
+    print(f"-----!!!END of the grand time slot{grand_time_slot} and calculating: ")
+    log_recorder.write(f"-----!!!END of the grand time slot{grand_time_slot} and calculating: \n")
     # 各rsu的决策x（连续形态）
-    continuous_x = [rsu.agent.x for rsu in RSU_entities]
-    print("RSU Decision x (continuous):", continuous_x)
+    for rsu in RSU_entities:
+        print(f"RSU{rsu.id} Decision x (continuous):", [round(num, 4) for num in rsu.agent.x.tolist()])
+        log_recorder.write(f"RSU{rsu.id} Decision x (continuous): {[round(num, 4) for num in rsu.agent.x.tolist()]}\n")
     # 各rsu的决策x（离散形态）
-    discrete_x = [utils.discretization(rsu.agent.x) for rsu in RSU_entities]
-    print("RSU Decision x (discrete):", discrete_x)
+    for rsu in RSU_entities:
+        print(f"RSU{rsu.id} Decision x (discrete):", utils.discretization(rsu.agent.x))
+        log_recorder.write(f"RSU{rsu.id} Decision x (discrete): {utils.discretization(rsu.agent.x)}\n")
     # 各rsu内用户的delay
     local_loss = [v2i_entities.f_func(utils.discretization(rsu.agent.x), rsu.serving_vehicles) for rsu in RSU_entities]
     print("RSU Loss (discrete x):", local_loss)
+    log_recorder.write(f"RSU Loss (discrete x): {local_loss}\n")
+    print()
+    log_recorder.write("\n")
     # 总delay
     global_loss = sum(local_loss)
     print("RSU total Loss (discrete x):", global_loss)
+    log_recorder.write(f"RSU total Loss (discrete x): {global_loss}\n")
     # 各rsu是否满足内存约束，为布尔量列表
     memory_constraint = [v2i_entities.constraint_memory(utils.discretization(rsu.agent.x)) <= rsu.caching_memory for rsu
                          in RSU_entities]
     # 内存约束是否全部满足
     memory_constraint_satisfied = all(memory_constraint)
     print("Memory Constraint Satisfied: ", memory_constraint_satisfied)
+    log_recorder.write(f"Memory Constraint Satisfied: {memory_constraint_satisfied}\n")
     # 各rsu是否满足cost约束，为布尔量列表
     local_cost_constraint = [v2i_entities.g_func(utils.discretization(rsu.agent.x), rsu.id) <= 0 for rsu in
                              RSU_entities]
@@ -114,9 +145,12 @@ while True:
     global_cost_constraint = sum(
         [v2i_entities.constraint_cost(utils.discretization(rsu.agent.x)) for rsu in RSU_entities])
     print("Global Cost Constraint: ", global_cost_constraint)
+    log_recorder.write(f"Global Cost Constraint: {global_cost_constraint}\n")
     # 总cost是否小于总cost约束
     global_cost_constraint_satisfied = global_cost_constraint <= sum(local_maximum_cache_cost)
     print("Global Cost Constraint Satisfied: ", global_cost_constraint_satisfied)
+    log_recorder.write(f"Global Cost Constraint Satisfied: {global_cost_constraint_satisfied}\n")
     # 所有约束是否全部满足
     constraint_satisfied = all((memory_constraint_satisfied, global_cost_constraint_satisfied))
     print("All Constraint Satisfied: ", constraint_satisfied)
+    log_recorder.write(f"All Constraint Satisfied: {constraint_satisfied}\n")

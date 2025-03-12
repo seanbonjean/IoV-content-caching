@@ -1,4 +1,4 @@
-import utils
+import route_predict.utils as utils
 import json
 import matplotlib.pyplot as plt
 
@@ -56,12 +56,12 @@ CENTER_LOCATION = (116.36032115, 39.911045075)
 X_RANGE = (116.3518143, 116.368828)
 Y_RANGE = (39.8996048, 39.92248535)
 
-f = open("all_filtered_users.json", 'r')
+f = open("filtered_users_0307_revised.json", 'r')
 # f = open("discarded_users.json", 'r')
 users = json.load(f)
 f.close()
 
-f = open("all_user_omega_step.json", 'r')
+f = open("user_omega_step_0307_revised.json", 'r')
 # f = open("discarded_omega_steps.json", 'r')
 omega_steps = json.load(f)
 f.close()

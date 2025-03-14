@@ -54,8 +54,10 @@ def get_user_content(user_id_new: int) -> list:
 
 # TODO 待确定
 mbs_caching_memory = [7.0 for _ in range(MBS_NUM)]
-rsu_caching_memory = [3.0 for _ in range(RSU_NUM)]
-local_maximum_cache_cost = [1.5 for _ in range(RSU_NUM)]
+popular_rsu = [14, 15, 24, 25, 33, 34, 35, 42, 43, 44, 45, 46, 52, 53, 54, 55, 56, 57, 62, 63, 64, 65, 66, 67, 72, 73,
+               74, 75, 76, ]
+rsu_caching_memory = [5.0 if i in popular_rsu else 2.0 for i in range(RSU_NUM)]
+local_maximum_cache_cost = [1.0 for _ in range(RSU_NUM)]
 
 # TODO 参数待确定
 alpha = [0.7, 0.5, 0.4, 0.7, 0.4, 0.7, 0.5, 0.4, 0.7, 0.4, ]  # caching cost ratio

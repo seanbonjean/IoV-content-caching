@@ -17,7 +17,7 @@ def constraint_cost(x: np.ndarray):
 
 def f_func(x, user_list: list) -> float:
     """
-    使用输入的x计算f(x)
+    使用输入的x计算f(x)，也即loss function
     :param x: 输入值
     :param user_list: agent所在RSU服务的用户列表
     # :param vehicle_entities: （从main中）传入用户列表（保留未来mbs_id使用）
@@ -103,6 +103,8 @@ class Agent:
         self.x = np.array([0.0 for _ in range(CONTENT_NUM)])
         self.y = np.array([0.0 for _ in range(CONTENT_NUM)])
         self.lambd = np.array([0.0 for _ in range(CONSTRAINT_NUM)])
+        self.discrete_x = np.array([0.0 for _ in range(CONTENT_NUM)])
+        self.prob_vect = np.array([0.0 for _ in range(CONTENT_NUM)])
 
         self.loss = 0.0  # 损失函数f_i,t
         self.constraint_func = np.array([0.0 for _ in range(CONSTRAINT_NUM)])  # 约束函数g_i,t
@@ -116,14 +118,56 @@ class Agent:
         constr3: -x<=0
         """
 
+    def check_feasibility(self, user_list: list):
+        # 方法1：贪心选择
+        x1 = np.ones_like(self.x)  # 方法1得到的离散x
+        x_list = self.x.tolist()
+        for i in range(CONTENT_NUM):
+            if x_list[i] == 0:
+                x1[i] = 0
+                x_list[i] = np.inf
+        memory_spent = constraint_memory(x1)
+        while memory_spent > rsu_caching_memory[self.id]:
+            min_pos = x_list.index(min(x_list))  # x中最小的content序号
+            x1[min_pos] = 0  # 把x1中对应content决策为0
+            x_list[min_pos] = np.inf  # x_list中该content置为inf，保证下次循环时该content不会被选择到（不能删去，避免影响content序号）
+            memory_spent = constraint_memory(x1)
+        # 方法2：动态规划
+        if user_list:  # 若rsu下无用户，不进行DP
+            subset = []  # 参与DP的content子集
+            for i in range(CONTENT_NUM):
+                if self.prob_vect[i] > 0:
+                    subset.append(i)
+            weights = [content_size[i] for i in subset]
+            values = []
+            zeros_array = np.zeros_like(self.x)
+            loss_under_zeros = f_func(zeros_array, user_list)
+            for i in subset:
+                only_one_array = zeros_array.copy()
+                only_one_array[i] = 1
+                values.append(loss_under_zeros - f_func(only_one_array, user_list))  # 暂时定义为content loss contribution
+            _, x2_nums = utils.knapsack(weights, values, rsu_caching_memory[self.id])
+            x2 = np.array([0.0 for _ in range(CONTENT_NUM)])
+            for i in x2_nums:
+                x2[subset[i]] = 1
+        else:
+            x2 = np.array([0.0 for _ in range(CONTENT_NUM)])
+        if f_func(x1, user_list) < f_func(x2, user_list):
+            self.discrete_x = x1
+        else:
+            self.discrete_x = x2
+        # self.x = self.x * self.discrete_x  # mask
+
     def update_initial_x(self, prob_vect: np.ndarray) -> None:
         self.x = self.alpha * self.x + (1 - self.alpha) * prob_vect
+        self.prob_vect = prob_vect
 
     def update_x(self, A_matrix: np.ndarray, RSU_entities: list):
         p = sum([A_matrix[self.id][j] * RSU_entities[j].agent.y for j in range(RSU_NUM)])
         self.x = projection.project_onto_box(p,
                                              np.array([0.0 for _ in range(CONTENT_NUM)]),
                                              np.array([1.0 for _ in range(CONTENT_NUM)]))
+
     # def reinit(self, new_z: np.ndarray):
     #     memory_spent = np.inf
     #     while memory_spent > rsu_caching_memory[self.id]:  # 检查是否满足rsu memory限制，首次进入while为inf确保进入
@@ -175,7 +219,7 @@ class Agent:
 
     def sample_f_g(self, user_list: list):
         """
-        Sample f_i,t and g_i,t
+        Sample loss func: f_i,t and constraint func: g_i,t
         :param user_list: RSU负责服务的用户（从RSU对象属性中取值传入即可）
         """
         self.loss = f_func(self.x, user_list)
@@ -227,6 +271,7 @@ class RSU(EdgeNode):
     def __init__(self, id: int, caching_memory: float):
         super().__init__(caching_memory)
         self.serving_vehicles = []  # 当前时刻正在服务（即正在与RSU通信）的vehicle序号列表
+        self.pred_serving_vehicles = []  # 预测的这个时刻可能服务的vehicle
         self.id = id
         self.agent = Agent(id)
 

@@ -20,11 +20,12 @@ SMALL_TIME_SLOT_NUM = 10
 # ]
 user_content = [[i for i in range(30 * j, 30 * (j + 1))] for j in range(10)]
 content_size = [1.0, 0.5, 1.0, 1.0, 0.5, 1.0, 0.5, 1.0, 1.0, 0.5, ]  # TODO 待确定
+# content_size = [1.0, 0.5, 1.2, 1.0, 0.4, 0.8, 0.5, 1.0, 1.0, 0.2, ]  # TODO 待确定
 
 
 def get_old_user_id(user_id_new: int) -> int:
     """
-    进行新旧user id转换
+    进行新旧user id转换，因为旧id由于筛选有空缺
     :param user_id_new: 新user id
     :return: 旧user id
     """
@@ -53,10 +54,10 @@ def get_user_content(user_id_new: int) -> list:
 # ]
 
 # TODO 待确定
-mbs_caching_memory = [7.0 for _ in range(MBS_NUM)]
+mbs_caching_memory = [6.0 for _ in range(MBS_NUM)]
 popular_rsu = [14, 15, 24, 25, 33, 34, 35, 42, 43, 44, 45, 46, 52, 53, 54, 55, 56, 57, 62, 63, 64, 65, 66, 67, 72, 73,
                74, 75, 76, ]
-rsu_caching_memory = [5.0 if i in popular_rsu else 2.0 for i in range(RSU_NUM)]
+rsu_caching_memory = [4.0 if i in popular_rsu else 2.0 for i in range(RSU_NUM)]
 local_maximum_cache_cost = [1.0 for _ in range(RSU_NUM)]
 
 # TODO 参数待确定
@@ -81,9 +82,9 @@ b_v2m = 1.250  # Gbps
 p_m2c = 1
 G_m2c = 10  # dBi
 epsilon_m2c = 2.5
-d_m2c = 100000  # m
+d_m2c = 1000000  # m
 sigma_m2c = 4e-18  # mW
-b_m2c = 1
+b_m2c = 0.01
 
 snr_v2r = p_v2r * G_v2r / (epsilon_v2r * d_v2r ** 2 * sigma_v2r ** 2)
 snr_v2m = p_v2m * G_v2m / (epsilon_v2m * d_v2m ** 2 * sigma_v2m ** 2)
@@ -97,6 +98,8 @@ trajs = data_read.read_json("route_predict/data/result/results_0307.json")
 probability_table = data_read.read_json("route_predict/data/result/table_0307.json")
 # W_matrix = data_read.read_json("W_matrix.json")
 A_matrix_list = data_read.read_json("A_matrix.json")
+mbs_content_popularity = data_read.read_json("MBS_content_popu.json")
+mbs_content_probability = data_read.read_json("MBS_content_prob.json")
 pass
 
 # W_matrix = np.array(W_matrix)

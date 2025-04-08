@@ -266,6 +266,8 @@ class MBS(EdgeNode):
         self.serving_vehicles = []  # 当前时刻正在服务（即正在与MBS通信）的vehicle序号列表
         # self.covering_RSU = covering_RSU  # 该MBS覆盖的RSU序号列表
 
+        self.decision_y = []  # MBS的content缓存决策
+
 
 class RSU(EdgeNode):
     def __init__(self, id: int, caching_memory: float):

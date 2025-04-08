@@ -202,3 +202,35 @@ print()
 
 with open("data/result/table_0307.json", 'w') as f:
     json.dump(probability_table_content, f)
+
+MBS_UPDATE_DURATION = 5  # MBS更新周期
+
+# 构建平行四边形数据结构，第一维是时间，第二维是各用户的平行四边形
+parallelograms = []
+for time in range(5, 45 + 1, MBS_UPDATE_DURATION):
+    last_start_time = min(time + MBS_UPDATE_DURATION - 1, 45)
+    parallelogram = {'first_start_time': time,  # 平行四边形第一行的起始时间
+                     'last_start_time': last_start_time,  # 平行四边形最后一行的起始时间
+                     'end_time': last_start_time + 4,  # 平行四边形最后一行的结束时间
+                     'users': []}
+    for user_data in users:
+        user_para = {'user_id': user_data['user_id'], 'para': [], 'belongMBS_para': []}  # 单个user的平行四边形
+        for pred_seq in user_data['pred_traj']:
+            if time <= pred_seq['start_timestamp'] < time + MBS_UPDATE_DURATION:
+                user_para['para'].append(pred_seq)
+                belongMBS_seq = []
+                for point in pred_seq['seqs']:
+                    MBS_distances = [utils.calculate_distance(point, pos) for pos in mbs_pos]
+                    min_distance = min(MBS_distances)
+                    if min_distance > MBS_RADIUS:
+                        raise ValueError(f"用户{user_data['user_id']}的轨迹点{point}不在MBS范围内")
+                    min_distance_index = MBS_distances.index(min_distance)
+                    # belongMBS_seq.append({'index': min_distance_index, 'loc': mbs_pos[min_distance_index],
+                    #                        'distance': min_distance})
+                    belongMBS_seq.append(min_distance_index)
+                user_para['belongMBS_para'].append(belongMBS_seq)
+        parallelogram['users'].append(user_para)
+    parallelograms.append(parallelogram)
+
+with open("data/result/parallelograms_0307.json", 'w') as f:
+    json.dump(parallelograms, f)

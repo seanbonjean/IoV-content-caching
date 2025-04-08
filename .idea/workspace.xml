@@ -4,12 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="feat: a prototype for initial use">
-      <change afterPath="$PROJECT_DIR$/plot.py" afterDir="false" />
+    <list default="true" id="8cc3f85d-787b-486f-a541-ac3c03aa3c51" name="更改" comment="fix: uploading data">
+      <change afterPath="$PROJECT_DIR$/MBS_content_popu.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MBS_content_prob.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build_MBSpara.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rollout_MC.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rollout_no_random.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rollout_simu_anne.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/route_predict/data/result/parallelograms_0307.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/route_predict/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/route_predict/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/route_predict/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/route_predict/temp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/v2i_entities.py" beforeDir="false" afterPath="$PROJECT_DIR$/v2i_entities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -63,6 +71,7 @@
     "Python.3plot_traj.executor": "Run",
     "Python.4discard_short_traj.executor": "Run",
     "Python.build_Amatrix.executor": "Run",
+    "Python.build_MBSpara.executor": "Debug",
     "Python.build_Wmatrix.executor": "Run",
     "Python.data.executor": "Debug",
     "Python.gps_to_xy.executor": "Run",
@@ -71,6 +80,9 @@
     "Python.plot.executor": "Run",
     "Python.plot_traj.executor": "Run",
     "Python.read_users.executor": "Debug",
+    "Python.rollout_MC.executor": "Debug",
+    "Python.rollout_no_random.executor": "Run",
+    "Python.rollout_simu_anne.executor": "Debug",
     "Python.temp.executor": "Debug",
     "Python.utils.executor": "Run",
     "Python.v2i_entities.executor": "Debug",
@@ -78,17 +90,17 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "matrix__at__decision",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/sean-/Documents/PycharmProjects/IoV-content-caching/route_predict/data/mbs_rsu",
+    "last_opened_file_path": "D:/my_code/PycharmProjects/IoV-content-caching",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\my_code\PycharmProjects\IoV-content-caching" />
       <recent name="C:\Users\sean-\Documents\PycharmProjects\IoV-content-caching\route_predict\data\mbs_rsu" />
       <recent name="C:\Users\sean-\Documents\PycharmProjects\IoV-content-caching\route_predict\data\result" />
       <recent name="C:\Users\sean-\Documents\PycharmProjects\IoV-content-caching\data\mbs_rsu" />
       <recent name="C:\Users\sean-\Documents\PycharmProjects\IoV-content-caching" />
-      <recent name="C:\Users\sean-\Documents\PycharmProjects\IoV-content-caching\data\rsu_mbs" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\sean-\Documents\PycharmProjects\IoV-content-caching\route_predict" />
@@ -183,7 +195,23 @@
       <option name="project" value="LOCAL" />
       <updated>1741760277944</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="feat: adding DP algo">
+      <option name="closed" value="true" />
+      <created>1741959846810</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1741959846810</updated>
+    </task>
+    <task id="LOCAL-00011" summary="fix: uploading data">
+      <option name="closed" value="true" />
+      <created>1741960021728</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1741960021728</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -196,7 +224,9 @@
     <MESSAGE value="feat: updating algo that using A matrix instead" />
     <MESSAGE value="debug: fixing bug that caused by missing A_matrix at grand slot 0" />
     <MESSAGE value="feat: a prototype for initial use" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: a prototype for initial use" />
+    <MESSAGE value="feat: adding DP algo" />
+    <MESSAGE value="fix: uploading data" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: uploading data" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -233,7 +263,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/route_predict/temp.py</url>
-          <line>64</line>
+          <line>65</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -272,23 +302,52 @@
           <option name="timeStamp" value="52" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>208</line>
-          <option name="timeStamp" value="59" />
+          <url>file://$PROJECT_DIR$/rollout_simu_anne.py</url>
+          <line>119</line>
+          <option name="timeStamp" value="82" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/v2i_entities.py</url>
-          <line>149</line>
-          <option name="timeStamp" value="61" />
+          <url>file://$PROJECT_DIR$/rollout_simu_anne.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="85" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/rollout_no_random.py</url>
+          <line>60</line>
+          <option name="timeStamp" value="89" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/rollout_MC.py</url>
+          <line>101</line>
+          <option name="timeStamp" value="94" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/build_MBSpara.py</url>
+          <line>51</line>
+          <option name="timeStamp" value="98" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>110</line>
+          <option name="timeStamp" value="105" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/build_MBSpara.py</url>
+          <line>21</line>
+          <option name="timeStamp" value="106" />
         </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="[rsu.agent.loss for rsu in RSU_entities]" language="Python" />
-        <watch expression="sum([rsu.agent.loss for rsu in RSU_entities])" language="Python" />
-        <watch expression="local_loss" language="Python" />
-        <watch expression="global_loss" language="Python" />
+        <watch expression="replacing_contents" language="Python" />
       </configuration>
     </watches-manager>
   </component>

@@ -61,5 +61,6 @@ import matplotlib.pyplot as plt
 # print(point1[0] - point2[0])
 # print(point1[1] - point2[1])
 
-data = data.read_json("data/result/results_final.json")
+data = data.read_json("data/result/parallelograms_0307.json")
+# data = data.read_json("../MBS_content_popu.json")
 print()

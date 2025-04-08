@@ -3,6 +3,9 @@ import time
 from data import *
 import v2i_entities
 import utils
+import rollout_no_random as rollout
+
+# import rollout_no_random as rollout2
 
 log_recorder = open("log_" + time.strftime("%m%d_%H_%M_%S", time.localtime()) + ".txt", "w")
 pred_log = open("pred.txt", "w")
@@ -96,6 +99,9 @@ grand_time_slot = 0  # 时间片计数器
 
 user_num_counter = []
 
+rsu_loss_sum = 0  # 所有时刻的RSU部分loss之和
+mbs_loss_sum = 0  # 所有时刻的MBS部分loss之和
+
 # 大时间片的循环
 # 大时间片从1开始，舍弃0时间，因为0时间没有对应的A矩阵
 while True:
@@ -175,8 +181,78 @@ while True:
         log_recorder.write(f"RSU total Loss (continuous x): {rsu_total_loss}\n")
     for rsu in RSU_entities:
         rsu.agent.check_feasibility(rsu.pred_serving_vehicles)
-    # TODO MBS的决策算法
-    # TODO 计算总的目标函数、审查全局约束条件（现在还不是总的，少MBS决策结果）
+    # MBS的决策
+    if grand_time_slot % 5 == 1:
+        mbs_update_time = grand_time_slot // 5  # MBS的决策，每5个grand时间片执行一次
+        # dp_loss_sum = 0
+        # rollout_loss_sum = 0
+
+        # # 方法1：DP背包问题解法
+        # for mbs_id, mbs in enumerate(MBS_entities):
+        #     weight = content_size
+        #     value = [
+        #         mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0) * content_size[i] / v_m2c
+        #         for i in range(CONTENT_NUM)]
+        #     _, mbs.decision_y = utils.knapsack(weight, value, mbs_caching_memory[mbs_id])
+        #     # this_loss, mbs.decision_y = utils.knapsack(weight, value, mbs_caching_memory[mbs_id])
+        #     # dp_loss_sum += this_loss
+        #     pass
+
+        # start_time = time.time()
+
+        # 方法2：rollout解法
+        contents = [i for i in range(CONTENT_NUM)]
+        sizes = {i: content_size[i] for i in range(CONTENT_NUM)}
+        for mbs_id, mbs in enumerate(MBS_entities):
+            capacity = mbs_caching_memory[mbs_id]
+            optimizer = rollout.DynamicCacheOptimizer(contents, sizes, capacity)
+            predicted_requests_inlist = [mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0)
+                                         for i in range(CONTENT_NUM)]
+            predicted_requests = {i: predicted_requests_inlist[i] for i in range(CONTENT_NUM)}
+            delay_gains_inlist = [content_size[i] / v_m2c for i in range(CONTENT_NUM)]
+            delay_gains = {i: delay_gains_inlist[i] for i in range(CONTENT_NUM)}
+
+            # # greedy初始解，添加了content进入概率的参考
+            # optimal_cache = rollout.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains,
+            #                                               content_prob=mbs_content_probability[
+            #                                                   mbs_update_time]['content_prob'][mbs_id])
+
+            optimal_cache = rollout.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains)  # greedy初始解
+
+            # # DP初始解
+            # weight = content_size
+            # value = [
+            #     mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0) * content_size[i] / v_m2c
+            #     for i in range(CONTENT_NUM)]
+            # _, optimal_cache = utils.knapsack(weight, value, mbs_caching_memory[mbs_id])
+            # optimal_cache = set(optimal_cache)
+
+            # # 根据初始解rollout
+            # new_cache = optimizer.rollout_step(optimal_cache, predicted_requests, delay_gains)
+            # mbs.decision_y = sorted(list(new_cache))
+
+            mbs.decision_y = sorted(list(optimal_cache))
+
+            # # 模拟退火+rollout
+            # solution, _ = optimizer.hybrid_optimization(predicted_requests, delay_gains)
+            # mbs.decision_y = [i for i in range(CONTENT_NUM) if solution[i] == 1]
+
+            # # 改正后正确的rollout测试
+            # env = rollout.MBSEnvironment(contents, sizes, capacity, predicted_requests, delay_gains)
+            # agent = rollout.MBSRolloutAgent(env, lambda s: rollout.greedy_policy(s, contents, sizes, predicted_requests, delay_gains,
+            #                                                      capacity))
+            # initial_cache = rollout2.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains)
+            # best_action = agent.online_decision(initial_cache)
+            # best_cache = env.transition(initial_cache, best_action)
+            # mbs.decision_y = sorted(list(best_cache))
+
+            # y_list = [1 if i in mbs.decision_y else 0 for i in range(CONTENT_NUM)]
+            # rollout_loss_sum += sum([y_list[i] * mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0) * content_size[i] / v_m2c for i in range(CONTENT_NUM)])
+            pass
+
+        # end_time = time.time()
+        # run_time = end_time - start_time
+
     print()
     log_recorder.write("\n" * 7)
     print(f"-----!!!END of the grand time slot{grand_time_slot} and calculating: ")
@@ -198,10 +274,32 @@ while True:
     log_recorder.write(f"RSU Loss (discrete x): {local_loss}\n")
     print()
     log_recorder.write("\n")
+    # 各MBS的决策y
+    for mbs_id, mbs in enumerate(MBS_entities):
+        print(f"MBS{mbs_id} Decision y:", mbs.decision_y)
+        log_recorder.write(f"MBS{mbs_id} Decision y: {mbs.decision_y}\n")
+    # MBS没有服务到用户造成的附加delay
+    users_not_served = []  # 统计各rsu中没有被rsu服务到的用户
+    for rsu in RSU_entities:
+        for user_id in rsu.serving_vehicles:
+            if rsu.agent.discrete_x[get_user_content(user_id)] == 0:
+                users_not_served.append(user_id)
+    additional_loss = 0
+    for user_id in users_not_served:
+        content_id = get_user_content(user_id)
+        if content_id not in MBS_entities[vehicle_entities[user_id].current_real_belong_MBS].decision_y:
+            additional_loss += content_size[content_id] / v_m2c
+    print("MBS additional loss (aka. m2c loss):", additional_loss)
+    log_recorder.write(f"MBS additional loss (aka. m2c loss): {additional_loss}\n")
+    # RSU总delay
+    rsu_total_loss = sum(local_loss)
+    print("RSU total Loss (discrete x):", rsu_total_loss)
+    log_recorder.write(f"RSU total Loss (discrete x): {rsu_total_loss}\n")
     # 总delay
-    global_loss = sum(local_loss)
-    print("RSU total Loss (discrete x):", global_loss)
-    log_recorder.write(f"RSU total Loss (discrete x): {global_loss}\n")
+    global_loss = rsu_total_loss + additional_loss
+    print("Global Loss (rsu + mbs):", global_loss)
+    log_recorder.write(f"Global Loss (rsu + mbs): {global_loss}\n")
+    # TODO mbs的内存约束和cost约束
     # 各rsu是否满足内存约束，为布尔量列表
     memory_constraint = [v2i_entities.constraint_memory(rsu.agent.discrete_x) <= rsu.caching_memory for rsu
                          in RSU_entities]
@@ -225,4 +323,9 @@ while True:
     constraint_satisfied = all((memory_constraint_satisfied, global_cost_constraint_satisfied))
     print("All Constraint Satisfied: ", constraint_satisfied)
     log_recorder.write(f"All Constraint Satisfied: {constraint_satisfied}\n")
+    rsu_loss_sum += rsu_total_loss
+    mbs_loss_sum += additional_loss
 # plot_user_distribution()
+print('\n' * 7)
+print(rsu_loss_sum)
+print(mbs_loss_sum)

@@ -3,10 +3,7 @@ import time
 from data import *
 import v2i_entities
 import utils
-import rollout_no_random as rollout
-
-# import compareRely_popu_greedy as rollout
-# import compareRely_gain_greedy as rollout
+import compareRely_gain_greedy as rollout
 
 # import rollout_no_random as rollout2
 
@@ -124,13 +121,15 @@ while True:
     #     rsu.agent.update_x(W_matrix, RSU_entities)
     #     rsu.agent.update_lambda()
     for rsu in RSU_entities:
-        # 构建概率向量
-        prob_vect_dict = probability_table[grand_time_slot][rsu.id]
-        for i in range(CONTENT_NUM):
-            prob_vect_dict.setdefault(str(i), 0)  # 无概率content补0
-        prob_vect = np.array([prob_vect_dict[str(i)] for i in range(CONTENT_NUM)])  # 字典类型转列表，生成numpy向量
-        # 根据alpha比例，使用概率向量更新x向量的初始值
-        rsu.agent.update_initial_x(prob_vect)
+        prob_vect = np.array([1.0 for _ in range(CONTENT_NUM)])
+        # # 构建概率向量
+        # prob_vect_dict = probability_table[grand_time_slot][rsu.id]
+        # for i in range(CONTENT_NUM):
+        #     prob_vect_dict.setdefault(str(i), 0)  # 无概率content补0
+        # prob_vect = np.array([prob_vect_dict[str(i)] for i in range(CONTENT_NUM)])  # 字典类型转列表，生成numpy向量
+        # # 根据alpha比例，使用概率向量更新x向量的初始值
+        # rsu.agent.update_initial_x(prob_vect)
+
     # 小时间片
     for small_time_slot in range(SMALL_TIME_SLOT_NUM):
         print()
@@ -156,9 +155,9 @@ while True:
                 continue
             prev_x = rsu.agent.x  # 保存上一时刻的x，若下一时刻的x不满足约束条件，则回滚x
             # 更新p并投影到box，得到下一时刻t+1的决策x
-            rsu.agent.update_x(A_matrix_list[grand_time_slot - 1], RSU_entities)
-            # A = [[0.33 if i == j or i == j - 1 or i == j + 1 else 0 for j in range(RSU_NUM)] for i in range(RSU_NUM)]
-            # rsu.agent.update_x(A, RSU_entities)
+            # rsu.agent.update_x(A_matrix_list[grand_time_slot - 1], RSU_entities)
+            A = [[1 if i == j else 0 for j in range(RSU_NUM)] for i in range(RSU_NUM)]
+            rsu.agent.update_x(A, RSU_entities)
             # 根据t+1时的x更新lambda
             rsu.agent.update_lambda()
             # 离散化x
@@ -185,8 +184,8 @@ while True:
         print("RSU total Loss (continuous x):", rsu_total_loss)
         log_recorder.write(f"RSU total Loss (continuous x): {rsu_total_loss}\n")
     for rsu in RSU_entities:
-        rsu.agent.check_feasibility(rsu.pred_serving_vehicles)
-        # rsu.agent.discrete_x = utils.discretization(rsu.agent.x)
+        # rsu.agent.check_feasibility(rsu.pred_serving_vehicles)
+        rsu.agent.discrete_x = utils.discretization(rsu.agent.x)
     # MBS的决策
     if grand_time_slot % 5 == 1:
         mbs_update_time = grand_time_slot // 5  # MBS的决策，每5个grand时间片执行一次
@@ -206,61 +205,64 @@ while True:
 
         # start_time = time.time()
 
-        # 方法2：rollout解法
-        contents = [i for i in range(CONTENT_NUM)]
-        sizes = {i: content_size[i] for i in range(CONTENT_NUM)}
-        for mbs_id, mbs in enumerate(MBS_entities):
-            capacity = mbs_caching_memory[mbs_id]
-            # optimizer = rollout.DynamicCacheOptimizer(contents, sizes, capacity)
-            predicted_requests_inlist = [mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0)
-                                         for i in range(CONTENT_NUM)]
-            predicted_requests = {i: predicted_requests_inlist[i] for i in range(CONTENT_NUM)}
-            delay_gains_inlist = [content_size[i] / v_m2c for i in range(CONTENT_NUM)]
-            delay_gains = {i: delay_gains_inlist[i] for i in range(CONTENT_NUM)}
-
-            # # greedy初始解，添加了content进入概率的参考
-            # optimal_cache = rollout.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains,
-            #                                               content_prob=mbs_content_probability[
-            #                                                   mbs_update_time]['content_prob'][mbs_id])
-
-            # optimal_cache = rollout.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains)  # greedy初始解
-
-            optimal_cache = rollout.greedy_plus_local_dp(contents, sizes, capacity, predicted_requests, delay_gains,
-                                                         top_k=3)
-
-            # # DP初始解
-            # weight = content_size
-            # value = [
-            #     mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0) * content_size[i] / v_m2c
-            #     for i in range(CONTENT_NUM)]
-            # _, optimal_cache = utils.knapsack(weight, value, mbs_caching_memory[mbs_id])
-            # optimal_cache = set(optimal_cache)
-
-            # # 根据初始解rollout
-            # new_cache = optimizer.rollout_step(optimal_cache, predicted_requests, delay_gains)
-            # mbs.decision_y = sorted(list(new_cache))
-
-            mbs.decision_y = sorted(list(optimal_cache))
-
-            # # 模拟退火+rollout
-            # solution, _ = optimizer.hybrid_optimization(predicted_requests, delay_gains)
-            # mbs.decision_y = [i for i in range(CONTENT_NUM) if solution[i] == 1]
-
-            # # 改正后正确的rollout测试
-            # env = rollout.MBSEnvironment(contents, sizes, capacity, predicted_requests, delay_gains)
-            # agent = rollout.MBSRolloutAgent(env, lambda s: rollout.greedy_policy(s, contents, sizes, predicted_requests, delay_gains,
-            #                                                      capacity))
-            # initial_cache = rollout2.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains)
-            # best_action = agent.online_decision(initial_cache)
-            # best_cache = env.transition(initial_cache, best_action)
-            # mbs.decision_y = sorted(list(best_cache))
-
-            # y_list = [1 if i in mbs.decision_y else 0 for i in range(CONTENT_NUM)]
-            # rollout_loss_sum += sum([y_list[i] * mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0) * content_size[i] / v_m2c for i in range(CONTENT_NUM)])
-            pass
+        # # 方法2：rollout解法
+        # contents = [i for i in range(CONTENT_NUM)]
+        # sizes = {i: content_size[i] for i in range(CONTENT_NUM)}
+        # for mbs_id, mbs in enumerate(MBS_entities):
+        #     capacity = mbs_caching_memory[mbs_id]
+        #     # optimizer = rollout.DynamicCacheOptimizer(contents, sizes, capacity)
+        #     predicted_requests_inlist = [mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0)
+        #                                  for i in range(CONTENT_NUM)]
+        #     predicted_requests = {i: predicted_requests_inlist[i] for i in range(CONTENT_NUM)}
+        #     delay_gains_inlist = [content_size[i] / v_m2c for i in range(CONTENT_NUM)]
+        #     delay_gains = {i: delay_gains_inlist[i] for i in range(CONTENT_NUM)}
+        #
+        #     # # greedy初始解，添加了content进入概率的参考
+        #     # optimal_cache = rollout.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains,
+        #     #                                               content_prob=mbs_content_probability[
+        #     #                                                   mbs_update_time]['content_prob'][mbs_id])
+        #
+        #     optimal_cache = rollout.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains)  # greedy初始解
+        #
+        #     # optimal_cache = rollout.greedy_plus_local_dp(contents, sizes, capacity, predicted_requests, delay_gains,
+        #     #                                              top_k=3)
+        #
+        #     # # DP初始解
+        #     # weight = content_size
+        #     # value = [
+        #     #     mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0) * content_size[i] / v_m2c
+        #     #     for i in range(CONTENT_NUM)]
+        #     # _, optimal_cache = utils.knapsack(weight, value, mbs_caching_memory[mbs_id])
+        #     # optimal_cache = set(optimal_cache)
+        #
+        #     # # 根据初始解rollout
+        #     # new_cache = optimizer.rollout_step(optimal_cache, predicted_requests, delay_gains)
+        #     # mbs.decision_y = sorted(list(new_cache))
+        #
+        #     mbs.decision_y = sorted(list(optimal_cache))
+        #
+        #     # # 模拟退火+rollout
+        #     # solution, _ = optimizer.hybrid_optimization(predicted_requests, delay_gains)
+        #     # mbs.decision_y = [i for i in range(CONTENT_NUM) if solution[i] == 1]
+        #
+        #     # # 改正后正确的rollout测试
+        #     # env = rollout.MBSEnvironment(contents, sizes, capacity, predicted_requests, delay_gains)
+        #     # agent = rollout.MBSRolloutAgent(env, lambda s: rollout.greedy_policy(s, contents, sizes, predicted_requests, delay_gains,
+        #     #                                                      capacity))
+        #     # initial_cache = rollout2.compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains)
+        #     # best_action = agent.online_decision(initial_cache)
+        #     # best_cache = env.transition(initial_cache, best_action)
+        #     # mbs.decision_y = sorted(list(best_cache))
+        #
+        #     # y_list = [1 if i in mbs.decision_y else 0 for i in range(CONTENT_NUM)]
+        #     # rollout_loss_sum += sum([y_list[i] * mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0) * content_size[i] / v_m2c for i in range(CONTENT_NUM)])
+        #     pass
 
         # end_time = time.time()
         # run_time = end_time - start_time
+
+        for mbs in MBS_entities:
+            mbs.decision_y = [0, 1, 3, 6, 7, ]
 
     print()
     log_recorder.write("\n" * 7)

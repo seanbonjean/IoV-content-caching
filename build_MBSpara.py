@@ -3,6 +3,8 @@ from route_predict.data_read import read_json
 from data import get_user_content, MBS_NUM
 
 user_paras = read_json("route_predict/data/result/parallelograms_0307.json")
+# for period in user_paras:
+#     period['users'] = period['users'][:150]
 pass
 step_length = 5
 

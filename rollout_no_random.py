@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import combinations
+import utils
 
 
 class DynamicCacheOptimizer:
@@ -216,7 +217,6 @@ def compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_g
             for c in contents
         }
 
-
     # 按价值密度降序排序内容
     sorted_contents = sorted(
         contents,
@@ -237,6 +237,100 @@ def compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_g
                 break
 
     return optimal_cache
+
+
+def greedy_plus_local_dp(contents, sizes, capacity, predicted_requests, delay_gains, content_prob=None, top_k=5):
+    """
+    Greedy + Local DP refinement ensuring capacity constraint
+
+    :param contents: 所有内容列表
+    :param sizes: 内容大小 {content_id: size}
+    :param capacity: 缓存容量（必须为整数）
+    :param predicted_requests: 请求次数 {content_id: count}
+    :param delay_gains: 延迟增益 {content_id: gain}
+    :param content_prob: 概率（可选） {content_id: prob}
+    :param top_k: DP中参与优化的候选集合大小
+    :return: 优化后的缓存内容集合 set
+    """
+
+    capacity = int(capacity)
+    if capacity <= 0:
+        return set()  # 无容量可用，直接返回空集合
+
+    # Step 1: 获取贪心解作为初始候选
+    greedy_solution = compute_optimal_cache(contents, sizes, capacity, predicted_requests, delay_gains, content_prob)
+
+    # Step 2: 构建候选集合（贪心解 ∪ top-k 高价值密度项）
+    if not content_prob:
+        value_density = {
+            c: (predicted_requests.get(c, 0) * delay_gains.get(c, 0)) / max(sizes.get(c, 1), 1)
+            for c in contents
+        }
+    else:
+        value_density = {
+            c: content_prob.get(str(c), 0) * (predicted_requests.get(c, 0) * delay_gains.get(c, 0)) / max(
+                sizes.get(c, 1), 1)
+            for c in contents
+        }
+
+    sorted_contents = sorted(contents, key=lambda x: value_density.get(x, 0), reverse=True)
+    top_contents = sorted_contents[:top_k]
+    candidate_set = list(set(greedy_solution).union(set(top_contents)))
+
+    # # Step 3: DP求解最优子集，不超过容量
+    # item_list = list(candidate_set)
+    # n = len(item_list)
+    # dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+    #
+    # for i in range(1, n + 1):
+    #     item = item_list[i - 1]
+    #     w = int(sizes.get(item, 0))
+    #     v = predicted_requests.get(item, 0) * delay_gains.get(item, 0)
+    #     for j in range(capacity + 1):
+    #         if j >= w:
+    #             dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - w] + v)
+    #         else:
+    #             dp[i][j] = dp[i - 1][j]
+
+    weights = [sizes.get(i) for i in candidate_set]
+    values = [predicted_requests.get(i) * delay_gains.get(i) for i in candidate_set]
+    _, res = utils.knapsack(weights, values, capacity)
+    res = [candidate_set[i] for i in res]  # !!重要：索引转换到candidate_set的ID
+    res = set(res)
+
+    # 如果有剩余容量，按照delay_gain继续补满
+    sorted_gain_contents = sorted(contents, key=lambda x: delay_gains.get(x, 0), reverse=True)
+    for content in sorted_gain_contents:
+        if content not in res:
+            content_size = sizes.get(content, 0)
+            if sum(sizes.get(i) for i in res) + content_size <= capacity:
+                res.add(content)
+
+    # Step 4: 回溯找出最终子集，并确保总容量合法
+    # res = set()
+    # j = capacity
+    # for i in range(n, 0, -1):
+    #     item = item_list[i - 1]
+    #     w = int(sizes.get(item, 0))
+    #     if j >= w and dp[i][j] == dp[i - 1][j - w] + predicted_requests.get(item, 0) * delay_gains.get(item, 0):
+    #         res.add(item)
+    #         j -= w
+
+    # Step 5: 最终安全检查（如果超了就裁剪）
+    total_size = sum(sizes[c] for c in res)
+    if total_size > capacity:
+        # 按照价值密度排序剔除最差的，直到满足容量
+        res = sorted(res, key=lambda c: value_density.get(c, 0))
+        final_set = set()
+        used = 0
+        for c in reversed(res):
+            s = sizes[c]
+            if used + s <= capacity:
+                final_set.add(c)
+                used += s
+        return final_set
+
+    return res
 
 
 # ==================== 测试案例 ====================

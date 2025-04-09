@@ -5,9 +5,6 @@ import v2i_entities
 import utils
 import rollout_no_random as rollout
 
-# import compareRely_popu_greedy as rollout
-# import compareRely_gain_greedy as rollout
-
 # import rollout_no_random as rollout2
 
 log_recorder = open("log_" + time.strftime("%m%d_%H_%M_%S", time.localtime()) + ".txt", "w")
@@ -129,45 +126,45 @@ while True:
         for i in range(CONTENT_NUM):
             prob_vect_dict.setdefault(str(i), 0)  # 无概率content补0
         prob_vect = np.array([prob_vect_dict[str(i)] for i in range(CONTENT_NUM)])  # 字典类型转列表，生成numpy向量
+        rsu.agent.x = utils.discretization(prob_vect)
+        rsu.agent.sample_f_g(rsu.pred_serving_vehicles)
         # 根据alpha比例，使用概率向量更新x向量的初始值
-        rsu.agent.update_initial_x(prob_vect)
-    # 小时间片
-    for small_time_slot in range(SMALL_TIME_SLOT_NUM):
-        print()
-        log_recorder.write("\n")
-        print("---Small Time Slot: ", small_time_slot)
-        log_recorder.write(f"---Small Time Slot: {small_time_slot}\n")
-        for rsu in RSU_entities:
-            # 采样loss func: f 和 constraint func: g
-            rsu.agent.sample_f_g(rsu.pred_serving_vehicles)
-            # 计算y值
-            rsu.agent.update_y(rsu.pred_serving_vehicles)
-        # 这里要拆开的原因是，需要先更新所有rsu的y，然后才能互相communicate更新x
-
-        # 这个feasible子集用于存储未被memory constraint终止fine-tuning的rsu集合
-        RSU_entities_feasible = RSU_entities.copy()
-        for rsu in RSU_entities:
-            # 如果没有任何RSU能有足够memory来继续cache，则直接跳出循环
-            if not RSU_entities_feasible:
-                print("\n\n---No RSU able to cache more content, terminating fine-tuning. ---\n\n")
-                log_recorder.write("\n\n---No RSU able to cache more content, terminating fine-tuning. ---\n\n")
-                break
-            if rsu not in RSU_entities_feasible:
-                continue
-            prev_x = rsu.agent.x  # 保存上一时刻的x，若下一时刻的x不满足约束条件，则回滚x
-            # 更新p并投影到box，得到下一时刻t+1的决策x
-            rsu.agent.update_x(A_matrix_list[grand_time_slot - 1], RSU_entities)
-            # A = [[0.33 if i == j or i == j - 1 or i == j + 1 else 0 for j in range(RSU_NUM)] for i in range(RSU_NUM)]
-            # rsu.agent.update_x(A, RSU_entities)
-            # 根据t+1时的x更新lambda
-            rsu.agent.update_lambda()
-            # 离散化x
-            decision_x = utils.discretization(rsu.agent.x)
-            # 检查内存限制
-            memory_spent = v2i_entities.constraint_memory(decision_x)
-            if memory_spent > rsu_caching_memory[rsu.id]:
-                rsu.agent.x = prev_x
-                RSU_entities_feasible.remove(rsu)
+        # rsu.agent.update_initial_x(prob_vect)
+        # # 小时间片
+        # for small_time_slot in range(SMALL_TIME_SLOT_NUM):
+        #     print()
+        #     log_recorder.write("\n")
+        #     print("---Small Time Slot: ", small_time_slot)
+        #     log_recorder.write(f"---Small Time Slot: {small_time_slot}\n")
+        #     for rsu in RSU_entities:
+        #         # 采样loss func: f 和 constraint func: g
+        #         rsu.agent.sample_f_g(rsu.pred_serving_vehicles)
+        #         # 计算y值
+        #         rsu.agent.update_y(rsu.pred_serving_vehicles)
+        #     # 这里要拆开的原因是，需要先更新所有rsu的y，然后才能互相communicate更新x
+        #
+        #     # 这个feasible子集用于存储未被memory constraint终止fine-tuning的rsu集合
+        #     RSU_entities_feasible = RSU_entities.copy()
+        #     for rsu in RSU_entities:
+        #         # 如果没有任何RSU能有足够memory来继续cache，则直接跳出循环
+        #         if not RSU_entities_feasible:
+        #             print("\n\n---No RSU able to cache more content, terminating fine-tuning. ---\n\n")
+        #             log_recorder.write("\n\n---No RSU able to cache more content, terminating fine-tuning. ---\n\n")
+        #             break
+        #         if rsu not in RSU_entities_feasible:
+        #             continue
+        #         prev_x = rsu.agent.x  # 保存上一时刻的x，若下一时刻的x不满足约束条件，则回滚x
+        #         # 更新p并投影到box，得到下一时刻t+1的决策x
+        #         rsu.agent.update_x(A_matrix_list[grand_time_slot - 1], RSU_entities)
+        #         # 根据t+1时的x更新lambda
+        #         rsu.agent.update_lambda()
+        #         # 离散化x
+        #         decision_x = utils.discretization(rsu.agent.x)
+        #         # 检查内存限制
+        #         memory_spent = v2i_entities.constraint_memory(decision_x)
+        #         if memory_spent > rsu_caching_memory[rsu.id]:
+        #             rsu.agent.x = prev_x
+        #             RSU_entities_feasible.remove(rsu)
         print()
         log_recorder.write("\n")
         for rsu in RSU_entities:
@@ -186,7 +183,6 @@ while True:
         log_recorder.write(f"RSU total Loss (continuous x): {rsu_total_loss}\n")
     for rsu in RSU_entities:
         rsu.agent.check_feasibility(rsu.pred_serving_vehicles)
-        # rsu.agent.discrete_x = utils.discretization(rsu.agent.x)
     # MBS的决策
     if grand_time_slot % 5 == 1:
         mbs_update_time = grand_time_slot // 5  # MBS的决策，每5个grand时间片执行一次
@@ -211,7 +207,7 @@ while True:
         sizes = {i: content_size[i] for i in range(CONTENT_NUM)}
         for mbs_id, mbs in enumerate(MBS_entities):
             capacity = mbs_caching_memory[mbs_id]
-            # optimizer = rollout.DynamicCacheOptimizer(contents, sizes, capacity)
+            optimizer = rollout.DynamicCacheOptimizer(contents, sizes, capacity)
             predicted_requests_inlist = [mbs_content_popularity[mbs_update_time]['content_popu'][mbs_id].get(str(i), 0)
                                          for i in range(CONTENT_NUM)]
             predicted_requests = {i: predicted_requests_inlist[i] for i in range(CONTENT_NUM)}

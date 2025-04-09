@@ -5,6 +5,7 @@ import route_predict.data_read as data_read
 MBS_NUM = 20
 RSU_NUM = 100
 VEHICLE_NUM = 264
+# VEHICLE_NUM =150
 CONTENT_NUM = 10
 CONSTRAINT_NUM = 1
 
@@ -19,8 +20,9 @@ SMALL_TIME_SLOT_NUM = 10
 #     [5, 14, 16, 36, 38, 69, 73, 75, 78, 108, 109, 124, 130, 132, 134, 142, 143, 147, 148, 150, 153, 154, 158, ],
 # ]
 user_content = [[i for i in range(30 * j, 30 * (j + 1))] for j in range(10)]
-content_size = [1.0, 0.5, 1.0, 1.0, 0.5, 1.0, 0.5, 1.0, 1.0, 0.5, ]  # TODO 待确定
-# content_size = [1.0, 0.5, 1.2, 1.0, 0.4, 0.8, 0.5, 1.0, 1.0, 0.2, ]  # TODO 待确定
+# user_content = [[i for i in range(15 * j, 15 * (j + 1))] for j in range(10)]
+# content_size = [1.0, 0.5, 1.0, 1.0, 0.5, 1.0, 0.5, 1.0, 1.0, 0.5, ]  # TODO 待确定
+content_size = [1.0, 0.5, 1.2, 1.0, 0.4, 0.8, 0.5, 1.0, 1.0, 0.2, ]  # TODO 待确定
 
 
 def get_old_user_id(user_id_new: int) -> int:
@@ -54,7 +56,7 @@ def get_user_content(user_id_new: int) -> list:
 # ]
 
 # TODO 待确定
-mbs_caching_memory = [6.0 for _ in range(MBS_NUM)]
+mbs_caching_memory = [5.0 for _ in range(MBS_NUM)]
 popular_rsu = [14, 15, 24, 25, 33, 34, 35, 42, 43, 44, 45, 46, 52, 53, 54, 55, 56, 57, 62, 63, 64, 65, 66, 67, 72, 73,
                74, 75, 76, ]
 rsu_caching_memory = [4.0 if i in popular_rsu else 2.0 for i in range(RSU_NUM)]
@@ -95,6 +97,7 @@ v_m2c = b_m2c * math.log(1 + snr_m2c, 2)
 
 # !!! 注意数据中的user_id不连续，是因为之前有剔除，防止混淆；后面使用时换用0-69的连续id！
 trajs = data_read.read_json("route_predict/data/result/results_0307.json")
+# trajs = trajs[:150]
 probability_table = data_read.read_json("route_predict/data/result/table_0307.json")
 # W_matrix = data_read.read_json("W_matrix.json")
 A_matrix_list = data_read.read_json("A_matrix.json")
